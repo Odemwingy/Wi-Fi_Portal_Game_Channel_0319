@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 
 import { AdminChannelPage } from "./AdminChannelPage";
+import { AdminOperationsPage } from "./AdminOperationsPage";
 import { App } from "./App";
 import { CabinPuzzlePackagePage } from "./CabinPuzzlePackagePage";
 import { MemoryMatchDuelPackagePage } from "./MemoryMatchDuelPackagePage";
@@ -15,6 +16,8 @@ const pathname = window.location.pathname;
 const RootComponent =
   pathname === "/admin/channel"
     ? AdminChannelPage
+    : pathname === "/admin/operations"
+      ? AdminOperationsPage
     : pathname === "/games/quiz-duel"
     ? QuizDuelPackagePage
     : pathname === "/games/cabin-puzzle"

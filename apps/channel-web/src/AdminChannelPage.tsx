@@ -447,6 +447,9 @@ export function AdminChannelPage() {
             >
               保存配置
             </button>
+            <a className="action-button" href="/admin/operations">
+              打开积分与航司后台
+            </a>
             <button className="action-button" onClick={() => void handleLogout()} type="button">
               退出登录
             </button>

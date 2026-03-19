@@ -2,10 +2,17 @@ import {
   adminAuditListResponseSchema,
   adminLoginRequestSchema,
   adminSessionSchema,
+  airlinePointsConfigSchema,
+  airlinePointsDispatchPendingResponseSchema,
+  airlinePointsSyncListResponseSchema,
   channelContentStateSchema,
+  channelCatalogEntrySchema,
   passengerPointsSummarySchema,
+  pointsAirlineSyncSummarySchema,
+  pointsAuditListResponseSchema,
   pointsLeaderboardResponseSchema,
   pointsReportResponseSchema,
+  pointsRuleSetSchema,
   realtimeServerMessageSchema,
   rewardRedeemResponseSchema,
   rewardsCatalogResponseSchema,
@@ -17,13 +24,23 @@ import {
   type AdminAuditListResponse,
   type AdminLoginRequest,
   type AdminSession,
+  type AirlinePointsConfig,
+  type AirlinePointsConfigUpsertRequest,
+  type AirlinePointsDispatchPendingResponse,
+  type AirlinePointsSyncListResponse,
+  type AirlinePointsSyncStatus,
   type ChannelContentState,
+  type ChannelCatalogEntry,
   type ChannelContentUpdateRequest,
   type PassengerPointsSummary,
   type PassengerRewardsWallet,
+  type PointsAirlineSyncSummary,
+  type PointsAuditListResponse,
   type PointsLeaderboardResponse,
   type PointsReportRequest,
   type PointsReportResponse,
+  type PointsRuleSet,
+  type PointsRuleSetUpsertRequest,
   type RealtimeConnectionQuery,
   type RealtimeServerMessage,
   type RewardRedeemRequest,
@@ -109,6 +126,176 @@ export async function updateAdminChannelContent(
   );
 }
 
+export async function getAdminPointsRulesConfig(payload: {
+  airline_code: string;
+  game_id: string;
+  session_token: string;
+}): Promise<PointsRuleSet> {
+  const query = new URLSearchParams({
+    airline_code: payload.airline_code,
+    game_id: payload.game_id
+  });
+
+  return requestJson(
+    `/admin/points-rules/config?${query.toString()}`,
+    {
+      headers: createAdminHeaders(payload.session_token)
+    },
+    pointsRuleSetSchema.parse
+  );
+}
+
+export async function updateAdminPointsRulesConfig(
+  payload: PointsRuleSetUpsertRequest & {
+    session_token: string;
+  }
+): Promise<PointsRuleSet> {
+  return requestJson(
+    "/admin/points-rules/config",
+    {
+      body: JSON.stringify({
+        airline_code: payload.airline_code,
+        game_id: payload.game_id,
+        max_points_per_report: payload.max_points_per_report,
+        rules: payload.rules
+      }),
+      headers: createAdminHeaders(payload.session_token),
+      method: "PUT"
+    },
+    pointsRuleSetSchema.parse
+  );
+}
+
+export async function getAdminPointsRulesAudit(payload: {
+  game_id?: string;
+  limit?: number;
+  passenger_id?: string;
+  session_token: string;
+}): Promise<PointsAuditListResponse> {
+  const query = new URLSearchParams();
+  if (payload.game_id) {
+    query.set("game_id", payload.game_id);
+  }
+  if (payload.limit) {
+    query.set("limit", String(payload.limit));
+  }
+  if (payload.passenger_id) {
+    query.set("passenger_id", payload.passenger_id);
+  }
+
+  return requestJson(
+    `/admin/points-rules/audit?${query.toString()}`,
+    {
+      headers: createAdminHeaders(payload.session_token)
+    },
+    pointsAuditListResponseSchema.parse
+  );
+}
+
+export async function getAdminAirlinePointsConfig(payload: {
+  airline_code: string;
+  session_token: string;
+}): Promise<AirlinePointsConfig> {
+  const query = new URLSearchParams({
+    airline_code: payload.airline_code
+  });
+
+  return requestJson(
+    `/admin/airline-points/config?${query.toString()}`,
+    {
+      headers: createAdminHeaders(payload.session_token)
+    },
+    airlinePointsConfigSchema.parse
+  );
+}
+
+export async function updateAdminAirlinePointsConfig(
+  payload: AirlinePointsConfigUpsertRequest & {
+    session_token: string;
+  }
+): Promise<AirlinePointsConfig> {
+  return requestJson(
+    "/admin/airline-points/config",
+    {
+      body: JSON.stringify({
+        airline_code: payload.airline_code,
+        api_base_url: payload.api_base_url,
+        auth_credential: payload.auth_credential,
+        auth_type: payload.auth_type,
+        enabled: payload.enabled,
+        field_mapping: payload.field_mapping,
+        points_multiplier: payload.points_multiplier,
+        provider: payload.provider,
+        retry_policy: payload.retry_policy,
+        simulation_mode: payload.simulation_mode,
+        sync_mode: payload.sync_mode
+      }),
+      headers: createAdminHeaders(payload.session_token),
+      method: "PUT"
+    },
+    airlinePointsConfigSchema.parse
+  );
+}
+
+export async function getAdminAirlineSyncRecords(payload: {
+  airline_code?: string;
+  limit?: number;
+  session_token: string;
+  status?: AirlinePointsSyncStatus;
+}): Promise<AirlinePointsSyncListResponse> {
+  const query = new URLSearchParams();
+  if (payload.airline_code) {
+    query.set("airline_code", payload.airline_code);
+  }
+  if (payload.limit) {
+    query.set("limit", String(payload.limit));
+  }
+  if (payload.status) {
+    query.set("status", payload.status);
+  }
+
+  return requestJson(
+    `/admin/airline-points/sync-records?${query.toString()}`,
+    {
+      headers: createAdminHeaders(payload.session_token)
+    },
+    airlinePointsSyncListResponseSchema.parse
+  );
+}
+
+export async function retryAdminAirlineSyncRecord(payload: {
+  session_token: string;
+  sync_id: string;
+}): Promise<PointsAirlineSyncSummary> {
+  return requestJson(
+    `/admin/airline-points/sync-records/${payload.sync_id}/retry`,
+    {
+      headers: createAdminHeaders(payload.session_token),
+      method: "POST"
+    },
+    pointsAirlineSyncSummarySchema.parse
+  );
+}
+
+export async function dispatchAdminAirlineSyncPending(payload: {
+  airline_code?: string;
+  limit?: number;
+  session_token: string;
+}): Promise<AirlinePointsDispatchPendingResponse> {
+  return requestJson(
+    "/admin/airline-points/dispatch-pending",
+    {
+      body: JSON.stringify({
+        airline_code: payload.airline_code,
+        limit: payload.limit
+      }),
+      headers: createAdminHeaders(payload.session_token),
+      method: "POST"
+    },
+    airlinePointsDispatchPendingResponseSchema.parse
+  );
+}
+
 export async function loginAdmin(
   payload: AdminLoginRequest
 ): Promise<AdminSession> {
@@ -154,6 +341,22 @@ export async function getAdminAuditLogs(
       headers: createAdminHeaders(sessionToken)
     },
     adminAuditListResponseSchema.parse
+  );
+}
+
+export async function getChannelCatalog(payload: {
+  airline_code: string;
+  locale: string;
+}): Promise<ChannelCatalogEntry[]> {
+  const query = new URLSearchParams({
+    airline_code: payload.airline_code,
+    locale: payload.locale
+  });
+
+  return requestJson(
+    `/channel/catalog?${query.toString()}`,
+    {},
+    channelCatalogEntrySchema.array().parse
   );
 }
 

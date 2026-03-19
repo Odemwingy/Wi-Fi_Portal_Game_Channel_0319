@@ -89,6 +89,7 @@ The default environment template is [`.env.example`](./.env.example). The Redis 
 
 - `apps/channel-web` is the initial passenger entry surface for the game channel.
 - `apps/channel-web` now also exposes a minimal content admin surface at `/admin/channel`.
+- `apps/channel-web` now also exposes an operations admin surface at `/admin/operations` for points rules and airline sync management.
 - `apps/platform-api` is the initial Game Platform service shell.
 - `apps/platform-api` now includes a configurable airline points sync outbox with realtime and batch dispatch modes.
 - `apps/platform-api` now includes a configurable points rules engine with audit ledger and per-game rule sets.
@@ -102,7 +103,7 @@ The default environment template is [`.env.example`](./.env.example). The Redis 
 - `ops-admin / portal-ops-123`
 - `super-admin / portal-super-123`
 
-These are local demo credentials for the current implementation of `/admin/channel` and `/admin/airline-points`. They should be replaced by a real identity source before production use.
+These are local demo credentials for the current implementation of `/admin/channel`, `/admin/operations`, and the protected `/api/admin/*` endpoints. They should be replaced by a real identity source before production use.
 
 ## Observability and Rollback
 
