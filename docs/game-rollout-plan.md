@@ -7,11 +7,12 @@
 - PRD 要求总计 `25` 款游戏，其中 `15` 款支持单机 + 联机对战，`10` 款为单机游戏。
 - 技术架构采用统一 `Game Channel + Game Platform + Game Packages`，联机仅考虑机上局域网内对战。
 - 首发目标不是一次性交付 25 款，而是先用 `2-5` 款代表性游戏跑通频道、启动器、房间、实时协议、积分与权益闭环。
-- 当前代码基线里已经有五款验证游戏：
+- 当前代码基线里已经有六款验证游戏：
   - `quiz-duel`：双人答题对战，已接入房间、WS、积分、独立 package 页面。
   - `cabin-puzzle`：单机拼图，已接入启动器与独立 package 页面。
   - `word-rally`：双人词汇回合对战，已接入房间、WS、积分与独立 package 页面。
   - `memory-match-duel`：双人翻牌配对，已接入房间、WS、积分与独立 package 页面。
+  - `spot-the-difference-race`：双人低频找不同竞速，已接入房间、WS、scene pack、单机/联机共用 package 页面。
   - `runway-rush`：单机反应挑战，已接入启动器、积分与独立 package 页面。
 
 ## 2. 选型原则
@@ -42,7 +43,7 @@
 | `quiz-duel` | Quiz Duel | 答题竞赛 | 双人 turn-based | S | P0 | Wave A | 已实现 | 当前首个联机验证样例 |
 | `word-rally` | Word Rally | 单词接龙 | 双人 turn-based | M | P1 | Wave A | 已实现 | 复用邀请码、回合与胜负结算 |
 | `memory-match-duel` | Memory Match Duel | 翻牌记忆 | 双人回合同步 | S | P1 | Wave A | 已实现 | 与 `cabin-puzzle` 视觉资产可共用 |
-| `spot-the-difference-race` | Spot the Difference Race | 找不同竞速 | 双人低频同步 | M | P1 | Wave A | 已预研 | 可单机计时，也可双人抢答 |
+| `spot-the-difference-race` | Spot the Difference Race | 找不同竞速 | 双人低频同步 | M | P1 | Wave A | 已实现 | 可单机计时，也可双人抢答 |
 | `mini-gomoku` | Mini Gomoku | 五子棋轻量版 | 双人 turn-based | S | P1 | Wave A | 规划中 | 规则稳定，服务端状态简单 |
 | `seat-map-strategy` | Seat Map Strategy | 占格策略 | 双人 turn-based | M | P1 | Wave B | 规划中 | 适合积分与排行榜 |
 | `signal-scramble` | Signal Scramble | 图案连线 | 双人异步竞速 | M | P1 | Wave B | 规划中 | 可比较完成时间和得分 |
@@ -97,7 +98,6 @@
 - 重点补齐：益智、策略、竞速、多人问答
 - 重点验证：后台上下架、配置生效、排行榜、权益兑换拉动
 - 推荐纳入：
-  - `spot-the-difference-race`
   - `mini-gomoku`
   - `seat-map-strategy`
   - `signal-scramble`
@@ -105,6 +105,7 @@
   - `airline-trivia-teams`
   - `luggage-logic`
   - `meal-cart-match`
+  - `spot-the-difference-race` 已提前完成，可作为 Wave B 的第一个已落地样例
 
 ### 4.3 Wave C：完整 25 款交付包（12 款）
 
@@ -185,6 +186,6 @@
 
 ## 8. 下一步执行建议
 
-1. Wave A 的 5 款验证游戏已经全部落地，下一步直接进入 `spot-the-difference-race` 的 Wave B 预研和后台配置能力补齐。
+1. `spot-the-difference-race` 已经落地，下一步优先转向后台配置能力和下一个 Wave B 游戏 `mini-gomoku`。
 2. 在后台配置能力落地前，先用静态 catalog 驱动首发内容，避免卡住 package 接入节奏。
 3. 所有新游戏必须先过 `single-player` 或 `multiplayer` 接入模板，不允许临时特判。

@@ -9,6 +9,7 @@ import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { MemoryMatchDuelAdapter } from "./game-adapters/memory-match-duel.adapter";
 import { QuizDuelAdapter } from "./game-adapters/quiz-duel.adapter";
+import { SpotTheDifferenceRaceAdapter } from "./game-adapters/spot-the-difference-race.adapter";
 import { WordRallyAdapter } from "./game-adapters/word-rally.adapter";
 import { GameRuntimeService } from "./game-runtime.service";
 import { PlatformDiagnosticsService } from "./platform-diagnostics.service";
@@ -46,6 +47,10 @@ import {
   QuizDuelStateRepository
 } from "./repositories/quiz-duel-state.repository";
 import {
+  SpotTheDifferenceRaceStateRepository,
+  StateStoreSpotTheDifferenceRaceStateRepository
+} from "./repositories/spot-the-difference-race-state.repository";
+import {
   StateStoreWordRallyStateRepository,
   WordRallyStateRepository
 } from "./repositories/word-rally-state.repository";
@@ -66,6 +71,7 @@ import { TraceMiddleware } from "./trace.middleware";
     GameRuntimeService,
     MemoryMatchDuelAdapter,
     QuizDuelAdapter,
+    SpotTheDifferenceRaceAdapter,
     WordRallyAdapter,
     TraceMiddleware,
     {
@@ -92,6 +98,10 @@ import { TraceMiddleware } from "./trace.middleware";
     {
       provide: MemoryMatchDuelStateRepository,
       useClass: StateStoreMemoryMatchDuelStateRepository
+    },
+    {
+      provide: SpotTheDifferenceRaceStateRepository,
+      useClass: StateStoreSpotTheDifferenceRaceStateRepository
     },
     {
       provide: PointsRepository,

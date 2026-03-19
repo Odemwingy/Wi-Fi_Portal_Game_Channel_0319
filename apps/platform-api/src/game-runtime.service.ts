@@ -15,6 +15,7 @@ import {
 
 import { MemoryMatchDuelAdapter } from "./game-adapters/memory-match-duel.adapter";
 import { QuizDuelAdapter } from "./game-adapters/quiz-duel.adapter";
+import { SpotTheDifferenceRaceAdapter } from "./game-adapters/spot-the-difference-race.adapter";
 import { WordRallyAdapter } from "./game-adapters/word-rally.adapter";
 import { RoomService, type RoomSubscriptionEvent } from "./room.service";
 
@@ -34,12 +35,15 @@ export class GameRuntimeService implements OnModuleDestroy {
     memoryMatchDuelAdapter: MemoryMatchDuelAdapter,
     @Inject(QuizDuelAdapter)
     quizDuelAdapter: QuizDuelAdapter,
+    @Inject(SpotTheDifferenceRaceAdapter)
+    spotTheDifferenceRaceAdapter: SpotTheDifferenceRaceAdapter,
     @Inject(WordRallyAdapter)
     wordRallyAdapter: WordRallyAdapter
   ) {
     this.adapters = createGameAdapterRegistry([
       memoryMatchDuelAdapter,
       quizDuelAdapter,
+      spotTheDifferenceRaceAdapter,
       wordRallyAdapter
     ] satisfies readonly GameAdapter[]);
     this.unsubscribe = this.roomService.subscribe((event) => {

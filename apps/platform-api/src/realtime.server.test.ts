@@ -11,6 +11,7 @@ import { WebSocket } from "ws";
 
 import { MemoryMatchDuelAdapter } from "./game-adapters/memory-match-duel.adapter";
 import { QuizDuelAdapter } from "./game-adapters/quiz-duel.adapter";
+import { SpotTheDifferenceRaceAdapter } from "./game-adapters/spot-the-difference-race.adapter";
 import { WordRallyAdapter } from "./game-adapters/word-rally.adapter";
 import { GameRuntimeService } from "./game-runtime.service";
 import { PlatformMetricsService } from "./platform-metrics.service";
@@ -18,6 +19,7 @@ import { InMemoryJsonStateStore } from "./repositories/json-state-store";
 import { StateStoreMemoryMatchDuelStateRepository } from "./repositories/memory-match-duel-state.repository";
 import { StateStoreQuizDuelStateRepository } from "./repositories/quiz-duel-state.repository";
 import { StateStoreRoomRepository } from "./repositories/room.repository";
+import { StateStoreSpotTheDifferenceRaceStateRepository } from "./repositories/spot-the-difference-race-state.repository";
 import { StateStoreWordRallyStateRepository } from "./repositories/word-rally-state.repository";
 import { RealtimeServer } from "./realtime.server";
 import { RoomService } from "./room.service";
@@ -213,6 +215,9 @@ async function createRealtimeFixture(
       new StateStoreMemoryMatchDuelStateRepository(stateStore)
     ),
     new QuizDuelAdapter(new StateStoreQuizDuelStateRepository(stateStore)),
+    new SpotTheDifferenceRaceAdapter(
+      new StateStoreSpotTheDifferenceRaceStateRepository(stateStore)
+    ),
     new WordRallyAdapter(new StateStoreWordRallyStateRepository(stateStore))
   );
   const metrics = new PlatformMetricsService();

@@ -4,12 +4,14 @@ import { startTrace } from "@wifi-portal/shared-observability";
 
 import { MemoryMatchDuelAdapter } from "./game-adapters/memory-match-duel.adapter";
 import { QuizDuelAdapter } from "./game-adapters/quiz-duel.adapter";
+import { SpotTheDifferenceRaceAdapter } from "./game-adapters/spot-the-difference-race.adapter";
 import { WordRallyAdapter } from "./game-adapters/word-rally.adapter";
 import { GameRuntimeService } from "./game-runtime.service";
 import { InMemoryJsonStateStore } from "./repositories/json-state-store";
 import { StateStoreMemoryMatchDuelStateRepository } from "./repositories/memory-match-duel-state.repository";
 import { StateStoreQuizDuelStateRepository } from "./repositories/quiz-duel-state.repository";
 import { StateStoreRoomRepository } from "./repositories/room.repository";
+import { StateStoreSpotTheDifferenceRaceStateRepository } from "./repositories/spot-the-difference-race-state.repository";
 import { StateStoreWordRallyStateRepository } from "./repositories/word-rally-state.repository";
 import { RoomService } from "./room.service";
 
@@ -23,6 +25,9 @@ describe("GameRuntimeService", () => {
         new StateStoreMemoryMatchDuelStateRepository(stateStore)
       ),
       new QuizDuelAdapter(new StateStoreQuizDuelStateRepository(stateStore)),
+      new SpotTheDifferenceRaceAdapter(
+        new StateStoreSpotTheDifferenceRaceStateRepository(stateStore)
+      ),
       new WordRallyAdapter(new StateStoreWordRallyStateRepository(stateStore))
     );
     const trace = startTrace();
@@ -207,6 +212,9 @@ describe("GameRuntimeService", () => {
         new StateStoreMemoryMatchDuelStateRepository(stateStore)
       ),
       new QuizDuelAdapter(new StateStoreQuizDuelStateRepository(stateStore)),
+      new SpotTheDifferenceRaceAdapter(
+        new StateStoreSpotTheDifferenceRaceStateRepository(stateStore)
+      ),
       new WordRallyAdapter(new StateStoreWordRallyStateRepository(stateStore))
     );
     const trace = startTrace();
@@ -263,6 +271,9 @@ describe("GameRuntimeService", () => {
         new StateStoreMemoryMatchDuelStateRepository(stateStore)
       ),
       new QuizDuelAdapter(new StateStoreQuizDuelStateRepository(stateStore)),
+      new SpotTheDifferenceRaceAdapter(
+        new StateStoreSpotTheDifferenceRaceStateRepository(stateStore)
+      ),
       new WordRallyAdapter(new StateStoreWordRallyStateRepository(stateStore))
     );
     const trace = startTrace();
@@ -318,6 +329,70 @@ describe("GameRuntimeService", () => {
       "player-2": 0
     });
     expect(resolvedSnapshot?.state.winning_player_ids).toEqual(["host-1"]);
+
+    runtime.onModuleDestroy();
+  });
+
+  it("supports spot-the-difference-race rooms with low-frequency spot claims", async () => {
+    const stateStore = new InMemoryJsonStateStore();
+    const roomService = new RoomService(new StateStoreRoomRepository(stateStore));
+    const runtime = new GameRuntimeService(
+      roomService,
+      new MemoryMatchDuelAdapter(
+        new StateStoreMemoryMatchDuelStateRepository(stateStore)
+      ),
+      new QuizDuelAdapter(new StateStoreQuizDuelStateRepository(stateStore)),
+      new SpotTheDifferenceRaceAdapter(
+        new StateStoreSpotTheDifferenceRaceStateRepository(stateStore)
+      ),
+      new WordRallyAdapter(new StateStoreWordRallyStateRepository(stateStore))
+    );
+    const trace = startTrace();
+
+    const created = await roomService.createRoom(trace, {
+      game_id: "spot-the-difference-race",
+      host_player_id: "host-1",
+      host_session_id: "sess-host-1",
+      max_players: 2,
+      room_name: "Spot Race Room"
+    });
+
+    await roomService.joinRoom(trace, {
+      player_id: "player-2",
+      room_id: created.room.room_id,
+      session_id: "sess-player-2"
+    });
+
+    const initialSnapshot = await runtime.getGameSnapshot(
+      trace,
+      "spot-the-difference-race",
+      created.room.room_id
+    );
+
+    expect(initialSnapshot?.state.current_scene_id).toBe("cabin-window-evening");
+    expect(initialSnapshot?.state.total_spot_count).toBe(5);
+
+    const updatedSnapshot = await runtime.handleGameEvent(trace, {
+      gameId: "spot-the-difference-race",
+      payload: {
+        spotId: "window-shade-01"
+      },
+      playerId: "host-1",
+      roomId: created.room.room_id,
+      seq: 1,
+      type: "game_event"
+    });
+
+    expect(updatedSnapshot?.state.claimed_spot_count).toBe(1);
+    expect(updatedSnapshot?.state.scores).toEqual({
+      "host-1": 8,
+      "player-2": 0
+    });
+    expect(updatedSnapshot?.state.last_recent_claim).toMatchObject({
+      playerId: "host-1",
+      spotId: "window-shade-01",
+      status: "claimed"
+    });
 
     runtime.onModuleDestroy();
   });

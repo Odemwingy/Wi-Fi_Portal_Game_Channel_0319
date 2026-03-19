@@ -72,6 +72,16 @@ All multiplayer games emit the shared event envelope:
 }
 ```
 
+For `spot-the-difference-race`, the current low-frequency event payload is:
+
+```ts
+{
+  spotId: string;
+}
+```
+
+The platform resolves ownership server-side and rebroadcasts the updated `game_state`.
+
 ## Room Contract
 
 The platform now exposes a shared lobby API:
@@ -167,6 +177,37 @@ Current platform behavior:
 - Disconnect and reconnect events emit both `room_snapshot` and `room_presence`.
 - `game_event` is applied by the registered game adapter, then broadcasts both `game_event` and the updated `game_state`, and is acknowledged to the sender.
 
+## Scene Pack Contract
+
+Scene-driven packages may ship a shared static scene pack and reuse it across single-player and multiplayer modes.
+
+The current `spot-the-difference-race` scene pack lives in:
+
+- `packages/game-sdk/src/spot-the-difference.ts`
+
+Recommended scene fields:
+
+- `scene.id`
+- `scene.title`
+- `scene.timeLimitSeconds`
+- `scene.leftCaption`
+- `scene.rightCaption`
+- `scene.spots[]`
+
+Each `spot` uses relative coordinates so the same package can render on different onboard WebView sizes:
+
+- `id`
+- `label`
+- `x`
+- `y`
+- `radius`
+
+Current runtime pattern:
+
+- single-player mode reuses the same scene pack with local state only
+- multiplayer mode reuses the same scene pack but sources progress from server `game_state`
+- websocket traffic carries only low-frequency spot-claim events, not pointer streams or frame sync
+
 ## State Storage Contract
 
 Current repository implementations are backed by a shared JSON state store abstraction, with Redis-compatible key and TTL rules:
@@ -206,4 +247,5 @@ Every game package must:
 - Multiplayer schemas: `packages/game-sdk/src/multiplayer.ts`
 - Platform room repository abstraction: `apps/platform-api/src/repositories/room.repository.ts`
 - Sample game-state repository abstraction: `apps/platform-api/src/repositories/quiz-duel-state.repository.ts`
+- Additional scene-pack example: `packages/game-sdk/src/spot-the-difference.ts`
 - Example metadata: `examples/game-packages/quiz-duel/metadata.yaml`

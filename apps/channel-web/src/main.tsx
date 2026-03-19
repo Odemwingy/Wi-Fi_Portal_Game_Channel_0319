@@ -6,6 +6,7 @@ import { CabinPuzzlePackagePage } from "./CabinPuzzlePackagePage";
 import { MemoryMatchDuelPackagePage } from "./MemoryMatchDuelPackagePage";
 import { QuizDuelPackagePage } from "./QuizDuelPackagePage";
 import { RunwayRushPackagePage } from "./RunwayRushPackagePage";
+import { SpotTheDifferenceRacePackagePage } from "./SpotTheDifferenceRacePackagePage";
 import { WordRallyPackagePage } from "./WordRallyPackagePage";
 import "./styles.css";
 
@@ -17,6 +18,8 @@ const RootComponent =
       ? CabinPuzzlePackagePage
       : pathname === "/games/memory-match-duel"
         ? MemoryMatchDuelPackagePage
+      : pathname === "/games/spot-the-difference-race"
+        ? SpotTheDifferenceRacePackagePage
       : pathname === "/games/runway-rush"
         ? RunwayRushPackagePage
       : pathname === "/games/word-rally"
