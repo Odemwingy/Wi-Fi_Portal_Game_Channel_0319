@@ -95,3 +95,4 @@ The default environment template is [`.env.example`](./.env.example). The Redis 
 - `pnpm test` covers unit and integration cases.
 - `pnpm test:smoke` validates the Docker-backed API and websocket core flow against a running local stack.
 - Compatibility, weak-network, and release-gate expectations are documented in [`docs/test-strategy.md`](./docs/test-strategy.md).
+- The 25-game candidate inventory, rollout waves, and acceptance matrix are documented in [`docs/game-rollout-plan.md`](./docs/game-rollout-plan.md).
