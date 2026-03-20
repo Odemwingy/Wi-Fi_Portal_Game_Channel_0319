@@ -41,5 +41,34 @@ services:
       retries: 5
       start_period: 15s
 
+  channel-web:
+    build:
+      context: .
+      dockerfile: docker/channel-web.Dockerfile
+      args:
+        VITE_API_BASE_URL: http://127.0.0.1:3000/api
+        VITE_WS_BASE_URL: ws://127.0.0.1:3000
+    container_name: wifi-portal-channel-web
+    restart: unless-stopped
+    depends_on:
+      platform-api:
+        condition: service_healthy
+    ports:
+      - "8080:80"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "-q",
+          "-O",
+          "-",
+          "http://127.0.0.1/"
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
 volumes:
   redis-data:

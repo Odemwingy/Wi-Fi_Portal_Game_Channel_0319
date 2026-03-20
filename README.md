@@ -29,6 +29,8 @@ pnpm dev:web
 pnpm dev:api
 pnpm infra:backend:up
 pnpm infra:backend:down
+pnpm infra:stack:up
+pnpm infra:stack:down
 pnpm infra:redis:up
 pnpm dev:api:redis
 pnpm test:smoke
@@ -87,6 +89,24 @@ The API container is wired to Redis by default and exposes:
 - `WS  http://127.0.0.1:3000/ws/game-room`
 
 The default environment template is [`.env.example`](./.env.example). The Redis container definition lives in [`docker-compose.yml`](./docker-compose.yml).
+
+### Docker Compose Full Stack
+
+```bash
+pnpm infra:stack:up
+```
+
+This starts:
+
+- `redis` on `6379`
+- `platform-api` on `3000`
+- `channel-web` on `8080`
+
+The frontend container serves the passenger channel shell and uses route-level lazy loading for package pages. Open:
+
+- `http://127.0.0.1:8080/`
+- `http://127.0.0.1:8080/admin/channel`
+- `http://127.0.0.1:8080/admin/operations`
 
 ## Delivery Notes
 

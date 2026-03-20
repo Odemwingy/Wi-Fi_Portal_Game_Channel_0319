@@ -10,6 +10,8 @@
     "dev:web": "pnpm --filter @wifi-portal/channel-web dev",
     "infra:backend:up": "docker compose up -d redis platform-api",
     "infra:backend:down": "docker compose stop platform-api redis",
+    "infra:stack:up": "docker compose up -d redis platform-api channel-web",
+    "infra:stack:down": "docker compose stop channel-web platform-api redis",
     "infra:redis:up": "docker compose up -d redis",
     "infra:redis:down": "docker compose stop redis",
     "lint": "eslint .",
