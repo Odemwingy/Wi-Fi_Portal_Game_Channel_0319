@@ -121,10 +121,10 @@ describe("PointsService", () => {
       passenger_id: "passenger-1"
     });
     expect(events.entries.map((entry) => entry.event_id)).toEqual([
-      "points:report-puzzle-1:score",
       "points:report-puzzle-1:game_end",
-      "points:report-quiz-1:score",
-      "points:report-quiz-1:game_end"
+      "points:report-puzzle-1:score",
+      "points:report-quiz-1:game_end",
+      "points:report-quiz-1:score"
     ]);
   });
 

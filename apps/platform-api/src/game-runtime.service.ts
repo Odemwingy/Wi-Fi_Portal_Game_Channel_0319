@@ -177,6 +177,7 @@ export class GameRuntimeService implements OnModuleDestroy {
           break;
 
         case "room.left":
+        case "room.cleaned_up":
           if (event.room.players.length === 0) {
             await adapter.finishMatch(event.room.room_id);
             this.initializedRooms.delete(initializationKey);

@@ -38,9 +38,8 @@ describe("RoomService", () => {
   });
 
   it("marks a disconnected player and restores them inside the reconnect window", async () => {
-    const service = new RoomService(
-      new StateStoreRoomRepository(new InMemoryJsonStateStore())
-    );
+    const repository = new StateStoreRoomRepository(new InMemoryJsonStateStore());
+    const service = new RoomService(repository);
     const trace = startTrace();
 
     const created = await service.createRoom(trace, {
@@ -77,6 +76,81 @@ describe("RoomService", () => {
       reconnected.room.players.find((player) => player.player_id === "player-2")
         ?.connection_status
     ).toBe("connected");
+  });
+
+  it("removes players after the reconnect window expires and downgrades the room back to waiting", async () => {
+    const repository = new StateStoreRoomRepository(new InMemoryJsonStateStore());
+    const service = new RoomService(repository);
+    const trace = startTrace();
+
+    const created = await service.createRoom(trace, {
+      game_id: "quiz-duel",
+      host_player_id: "host-1",
+      host_session_id: "sess-host-1",
+      room_name: "Cleanup Room",
+      max_players: 2
+    });
+
+    await service.joinRoom(trace, {
+      room_id: created.room.room_id,
+      player_id: "player-2",
+      session_id: "sess-player-2"
+    });
+    await service.setReady(trace, {
+      room_id: created.room.room_id,
+      player_id: "player-2",
+      ready: true
+    });
+    const disconnected = await service.disconnect(
+      trace,
+      created.room.room_id,
+      "player-2"
+    );
+
+    const expiredRoom = {
+      ...disconnected.room,
+      players: disconnected.room.players.map((player) =>
+        player.player_id === "player-2"
+          ? {
+              ...player,
+              reconnect_deadline_at: new Date(Date.now() - 1_000).toISOString()
+            }
+          : player
+      )
+    };
+    await repository.set(expiredRoom);
+
+    await service.sweepExpiredRooms(trace);
+
+    const room = await service.getRoom(trace, created.room.room_id);
+    expect(room.room.status).toBe("waiting");
+    expect(room.room.players).toHaveLength(1);
+    expect(room.room.players[0]?.player_id).toBe("host-1");
+  });
+
+  it("deletes stale waiting rooms during maintenance cleanup", async () => {
+    const repository = new StateStoreRoomRepository(new InMemoryJsonStateStore());
+    const service = new RoomService(repository);
+    const trace = startTrace();
+
+    const created = await service.createRoom(trace, {
+      game_id: "quiz-duel",
+      host_player_id: "host-1",
+      host_session_id: "sess-host-1",
+      room_name: "Stale Room",
+      max_players: 2
+    });
+
+    await repository.set({
+      ...created.room,
+      updated_at: new Date(Date.now() - 31 * 60 * 1000).toISOString()
+    });
+
+    await service.sweepExpiredRooms(trace);
+
+    await expect(service.getRoom(trace, created.room.room_id)).rejects.toThrow(
+      "Room not found"
+    );
   });
 
   it("joins a room by invite code and normalizes the code casing", async () => {

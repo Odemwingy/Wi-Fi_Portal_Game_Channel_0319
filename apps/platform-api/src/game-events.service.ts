@@ -152,6 +152,7 @@ export class GameEventsService {
       {
         events_count: number;
         latest_result: GameResultOutcome | null;
+        latest_result_at: string | null;
         last_event_at: string;
         passenger_id: string;
         score_by_game: Record<string, number>;
@@ -164,6 +165,7 @@ export class GameEventsService {
       const current = byPassenger.get(entry.passenger_id) ?? {
         events_count: 0,
         latest_result: null,
+        latest_result_at: null,
         last_event_at: entry.occurred_at,
         passenger_id: entry.passenger_id,
         score_by_game: {},
@@ -184,9 +186,11 @@ export class GameEventsService {
       }
       if (
         entry.result &&
-        current.last_event_at.localeCompare(entry.occurred_at) <= 0
+        (!current.latest_result_at ||
+          current.latest_result_at.localeCompare(entry.occurred_at) <= 0)
       ) {
         current.latest_result = entry.result;
+        current.latest_result_at = entry.occurred_at;
       }
 
       byPassenger.set(entry.passenger_id, current);
@@ -203,8 +207,14 @@ export class GameEventsService {
       .slice(0, limit)
       .map((entry, index) =>
         gameEventLeaderboardEntrySchema.parse({
-          ...entry,
-          rank: index + 1
+          events_count: entry.events_count,
+          latest_result: entry.latest_result,
+          last_event_at: entry.last_event_at,
+          passenger_id: entry.passenger_id,
+          rank: index + 1,
+          score_by_game: entry.score_by_game,
+          total_duration_seconds: entry.total_duration_seconds,
+          total_score: entry.total_score
         })
       );
 

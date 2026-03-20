@@ -80,7 +80,14 @@ export class StateStoreGameEventsRepository extends GameEventsRepository {
 
     return entries
       .filter((entry): entry is GameEventRecord => entry !== null)
-      .sort((left, right) => right.recorded_at.localeCompare(left.recorded_at))
+      .sort((left, right) => {
+        const recordedAtComparison = right.recorded_at.localeCompare(left.recorded_at);
+        if (recordedAtComparison !== 0) {
+          return recordedAtComparison;
+        }
+
+        return left.event_id.localeCompare(right.event_id);
+      })
       .slice(0, input.limit ?? 20);
   }
 

@@ -19,6 +19,7 @@ import {
 } from "@wifi-portal/game-sdk";
 import {
   createStructuredLogger,
+  startTrace,
   startChildSpan,
   type TraceContext
 } from "@wifi-portal/shared-observability";
@@ -30,6 +31,7 @@ export type RoomEventAction =
   | "room.created"
   | "room.joined"
   | "room.left"
+  | "room.cleaned_up"
   | "room.ready_state_updated"
   | "room.reconnected"
   | "room.player_disconnected";
@@ -43,21 +45,29 @@ type RoomEventListener = (event: RoomSubscriptionEvent) => void;
 
 const logger = createStructuredLogger("platform-api.room-service");
 const RECONNECT_WINDOW_SECONDS = 120;
+const STALE_WAITING_ROOM_SECONDS = 30 * 60;
+const MAINTENANCE_SWEEP_INTERVAL_MS = 30_000;
 
 @Injectable()
 export class RoomService {
   private readonly listeners = new Set<RoomEventListener>();
+  private readonly maintenanceTimer: ReturnType<typeof setInterval>;
 
   constructor(
     @Inject(RoomRepository)
     private readonly roomRepository: RoomRepository
-  ) {}
+  ) {
+    this.maintenanceTimer = setInterval(() => {
+      void this.sweepExpiredRooms(startTrace());
+    }, MAINTENANCE_SWEEP_INTERVAL_MS);
+    this.maintenanceTimer.unref();
+  }
 
   async createRoom(traceContext: TraceContext, payload: unknown) {
     const span = startChildSpan(traceContext);
     const request = this.parsePayload(createRoomRequestSchema.safeParse(payload));
 
-    await this.cleanupExpiredRooms();
+    await this.sweepExpiredRooms(traceContext);
 
     const now = new Date().toISOString();
     const room = roomSnapshotSchema.parse({
@@ -109,7 +119,7 @@ export class RoomService {
     const request = this.parsePayload(joinRoomRequestSchema.safeParse(payload));
     const room = await this.getRoomOrThrow(request.room_id);
 
-    await this.cleanupRoom(room.room_id);
+    await this.cleanupRoom(traceContext, room.room_id);
 
     if (room.players.some((player) => player.player_id === request.player_id)) {
       throw new BadRequestException("Player already exists in room");
@@ -187,7 +197,7 @@ export class RoomService {
     const updatedRoom = await this.persistRoom({
       ...room,
       host_player_id: nextHostId ?? room.host_player_id,
-      status: remainingPlayers.length === 0 ? "abandoned" : room.status,
+      status: this.deriveRoomStatus(remainingPlayers),
       updated_at: new Date().toISOString(),
       players: remainingPlayers.map((player) => ({
         ...player,
@@ -236,7 +246,7 @@ export class RoomService {
     const updatedRoom = await this.persistRoom({
       ...room,
       players: updatedPlayers,
-      status: allReady ? "ready" : "waiting",
+      status: this.deriveRoomStatus(updatedPlayers, allReady),
       updated_at: new Date().toISOString()
     });
 
@@ -283,6 +293,19 @@ export class RoomService {
 
     const updatedRoom = await this.persistRoom({
       ...room,
+      status: this.deriveRoomStatus(
+        room.players.map((candidate) =>
+          candidate.player_id === request.player_id
+            ? {
+                ...candidate,
+                session_id: request.session_id,
+                connection_status: "connected",
+                disconnected_at: null,
+                reconnect_deadline_at: null
+              }
+            : candidate
+        )
+      ),
       updated_at: new Date().toISOString(),
       players: room.players.map((candidate) =>
         candidate.player_id === request.player_id
@@ -328,6 +351,18 @@ export class RoomService {
 
     const updatedRoom = await this.persistRoom({
       ...room,
+      status: this.deriveRoomStatus(
+        room.players.map((player) =>
+          player.player_id === playerId
+            ? {
+                ...player,
+                connection_status: "disconnected",
+                disconnected_at: now.toISOString(),
+                reconnect_deadline_at: reconnectDeadline
+              }
+            : player
+        )
+      ),
       updated_at: now.toISOString(),
       players: room.players.map((player) =>
         player.player_id === playerId
@@ -364,7 +399,7 @@ export class RoomService {
 
   async getRoom(traceContext: TraceContext, roomId: string) {
     const span = startChildSpan(traceContext);
-    await this.cleanupRoom(roomId);
+    await this.cleanupRoom(traceContext, roomId);
     const room = await this.getRoomOrThrow(roomId);
 
     logger.info("room.fetched", span, {
@@ -421,13 +456,14 @@ export class RoomService {
     };
   }
 
-  private async cleanupExpiredRooms() {
+  async sweepExpiredRooms(traceContext: TraceContext) {
     for (const roomId of await this.roomRepository.listIds()) {
-      await this.cleanupRoom(roomId);
+      await this.cleanupRoom(traceContext, roomId);
     }
   }
 
-  private async cleanupRoom(roomId: string) {
+  private async cleanupRoom(traceContext: TraceContext, roomId: string) {
+    const span = startChildSpan(traceContext);
     const room = await this.roomRepository.get(roomId);
     if (!room) {
       return;
@@ -440,27 +476,79 @@ export class RoomService {
       }
       return new Date(player.reconnect_deadline_at).getTime() >= now;
     });
+    const removedPlayerIds = room.players
+      .filter((player) => !activePlayers.some((active) => active.player_id === player.player_id))
+      .map((player) => player.player_id);
+    const isStaleWaitingRoom =
+      room.players.length <= 1 &&
+      room.status === "waiting" &&
+      Date.parse(room.updated_at) + STALE_WAITING_ROOM_SECONDS * 1000 < now;
 
-    if (activePlayers.length === 0) {
+    if (activePlayers.length === 0 || isStaleWaitingRoom) {
       await this.roomRepository.delete(roomId);
+
+      logger.warn("room.cleaned_up", span, {
+        input_summary: roomId,
+        output_summary: "deleted",
+        metadata: {
+          reason: isStaleWaitingRoom ? "stale_waiting_room" : "expired_reconnect_window",
+          removed_player_ids: removedPlayerIds,
+          room_id: roomId
+        }
+      });
+
+      this.emitRoomEvent(
+        "room.cleaned_up",
+        traceContext,
+        roomSnapshotSchema.parse({
+          ...room,
+          players: [],
+          status: "abandoned",
+          updated_at: new Date().toISOString()
+        }),
+        null
+      );
       return;
     }
 
     const nextHostId = activePlayers.find((player) => player.is_host)?.player_id
       ?? activePlayers[0]?.player_id
       ?? room.host_player_id;
-
-    await this.roomRepository.set(
-      roomSnapshotSchema.parse({
-        ...room,
-        host_player_id: nextHostId,
-        updated_at: new Date().toISOString(),
-        players: activePlayers.map((player) => ({
+    const nextRoom = roomSnapshotSchema.parse({
+      ...room,
+      host_player_id: nextHostId,
+      status: this.deriveRoomStatus(
+        activePlayers.map((player) => ({
           ...player,
           is_host: player.player_id === nextHostId
         }))
-      })
-    );
+      ),
+      updated_at: new Date().toISOString(),
+      players: activePlayers.map((player) => ({
+        ...player,
+        is_host: player.player_id === nextHostId
+      }))
+    });
+
+    const roomChanged =
+      removedPlayerIds.length > 0 ||
+      nextRoom.status !== room.status ||
+      nextRoom.host_player_id !== room.host_player_id;
+
+    await this.roomRepository.set(nextRoom);
+
+    if (roomChanged) {
+      logger.info("room.cleaned_up", span, {
+        input_summary: roomId,
+        output_summary: nextRoom.status,
+        metadata: {
+          removed_player_ids: removedPlayerIds,
+          room_id: roomId
+        }
+      });
+
+      this.emitRoomEvent("room.cleaned_up", traceContext, nextRoom, null);
+    }
   }
 
   private async persistRoom(room: RoomRecord) {
@@ -477,7 +565,7 @@ export class RoomService {
   }
 
   private async findRoomByInviteCode(inviteCode: string) {
-    await this.cleanupExpiredRooms();
+    await this.sweepExpiredRooms(startTrace());
 
     const normalizedInviteCode = inviteCode.trim().toUpperCase();
 
@@ -536,5 +624,23 @@ export class RoomService {
 
   private createInviteCode() {
     return Math.random().toString(36).slice(2, 8).toUpperCase();
+  }
+
+  private deriveRoomStatus(players: RoomPlayer[], allReady?: boolean): RoomSnapshot["status"] {
+    if (players.length === 0) {
+      return "abandoned";
+    }
+
+    const connectedPlayers = players.filter(
+      (player) => player.connection_status === "connected"
+    );
+    if (connectedPlayers.length < 2) {
+      return "waiting";
+    }
+
+    const everyoneReady =
+      allReady ?? connectedPlayers.every((player) => player.ready);
+
+    return everyoneReady ? "ready" : "waiting";
   }
 }
