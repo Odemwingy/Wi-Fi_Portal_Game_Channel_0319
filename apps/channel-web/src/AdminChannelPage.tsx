@@ -3,6 +3,7 @@ import { startTransition, useEffect, useState } from "react";
 import type {
   AdminAuditEntry,
   AdminSession,
+  ChannelContentDocument,
   ChannelContentState
 } from "@wifi-portal/game-sdk";
 
@@ -11,6 +12,7 @@ import {
   getAdminChannelContent,
   getAdminMe,
   loginAdmin,
+  publishAdminChannelContent,
   logoutAdmin,
   updateAdminChannelContent
 } from "./channel-api";
@@ -28,7 +30,7 @@ export function AdminChannelPage() {
   const [airlineCode, setAirlineCode] = useState("MU");
   const [locale, setLocale] = useState("zh-CN");
   const [reloadVersion, setReloadVersion] = useState(0);
-  const [draft, setDraft] = useState<ChannelContentState | null>(null);
+  const [document, setDocument] = useState<ChannelContentDocument | null>(null);
   const [adminSession, setAdminSession] = useState<AdminSession | null>(null);
   const [auditEntries, setAuditEntries] = useState<AdminAuditEntry[]>([]);
   const [loginForm, setLoginForm] = useState<LoginForm>({
@@ -39,12 +41,12 @@ export function AdminChannelPage() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
+  const draft = document?.draft ?? null;
   const sortedCatalog = [...(draft?.catalog ?? [])].sort(
     (left, right) => left.sort_order - right.sort_order
   );
-  const publishedCount = draft?.catalog.filter(
-    (entry) => entry.status === "published"
-  ).length ?? 0;
+  const publication = document?.publication ?? null;
+  const hasUnpublishedChanges = publication?.has_unpublished_changes ?? false;
   const canViewAudit = adminSession?.user.roles.some(
     (role) => role === "ops_admin" || role === "super_admin"
   ) ?? false;
@@ -86,7 +88,7 @@ export function AdminChannelPage() {
 
   useEffect(() => {
     if (!adminSession) {
-      setDraft(null);
+      setDocument(null);
       setAuditEntries([]);
       return;
     }
@@ -115,7 +117,7 @@ export function AdminChannelPage() {
         }
 
         startTransition(() => {
-          setDraft(content);
+          setDocument(content);
           setAuditEntries(audit.entries);
         });
       } catch (loadError) {
@@ -167,7 +169,7 @@ export function AdminChannelPage() {
 
     startTransition(() => {
       setAdminSession(null);
-      setDraft(null);
+      setDocument(null);
       setAuditEntries([]);
     });
     setNotice("已退出后台登录。");
@@ -201,12 +203,44 @@ export function AdminChannelPage() {
         : { entries: [] };
 
       startTransition(() => {
-        setDraft(response);
+        setDocument(response);
         setAuditEntries(audit.entries);
       });
-      setNotice("配置已保存，频道首页会按最新配置返回内容。");
+      setNotice("草稿已保存，发布前不会影响前台频道。");
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Save failed");
+    } finally {
+      setStatus("idle");
+    }
+  }
+
+  async function handlePublish() {
+    if (!adminSession) {
+      return;
+    }
+
+    setStatus("saving");
+    setError(null);
+    setNotice(null);
+
+    try {
+      const response = await publishAdminChannelContent({
+        airline_code: airlineCode,
+        locale,
+        session_token: adminSession.session_token
+      });
+
+      const audit = canViewAudit
+        ? await getAdminAuditLogs(adminSession.session_token)
+        : { entries: [] };
+
+      startTransition(() => {
+        setDocument(response);
+        setAuditEntries(audit.entries);
+      });
+      setNotice("草稿已发布，前台会读取最新 published 配置。");
+    } catch (publishError) {
+      setError(publishError instanceof Error ? publishError.message : "Publish failed");
     } finally {
       setStatus("idle");
     }
@@ -216,13 +250,16 @@ export function AdminChannelPage() {
     field: "channel_name" | "hero_title",
     value: string
   ) {
-    setDraft((current) =>
+    setDocument((current) =>
       current
         ? {
             ...current,
-            channel_config: {
-              ...current.channel_config,
-              [field]: value
+            draft: {
+              ...current.draft,
+              channel_config: {
+                ...current.draft.channel_config,
+                [field]: value
+              }
             }
           }
         : current
@@ -230,15 +267,18 @@ export function AdminChannelPage() {
   }
 
   function updateFeatureFlag(flag: string, checked: boolean) {
-    setDraft((current) =>
+    setDocument((current) =>
       current
         ? {
             ...current,
-            channel_config: {
-              ...current.channel_config,
-              feature_flags: {
-                ...current.channel_config.feature_flags,
-                [flag]: checked
+            draft: {
+              ...current.draft,
+              channel_config: {
+                ...current.draft.channel_config,
+                feature_flags: {
+                  ...current.draft.channel_config.feature_flags,
+                  [flag]: checked
+                }
               }
             }
           }
@@ -252,13 +292,16 @@ export function AdminChannelPage() {
       .map((section) => section.trim())
       .filter(Boolean);
 
-    setDraft((current) =>
+    setDocument((current) =>
       current
         ? {
             ...current,
-            channel_config: {
-              ...current.channel_config,
-              sections
+            draft: {
+              ...current.draft,
+              channel_config: {
+                ...current.draft.channel_config,
+                sections
+              }
             }
           }
         : current
@@ -269,18 +312,21 @@ export function AdminChannelPage() {
     gameId: string,
     patch: Partial<ChannelContentState["catalog"][number]>
   ) {
-    setDraft((current) =>
+    setDocument((current) =>
       current
         ? {
             ...current,
-            catalog: current.catalog.map((entry) =>
-              entry.game_id === gameId
-                ? {
-                    ...entry,
-                    ...patch
-                  }
-                : entry
-            )
+            draft: {
+              ...current.draft,
+              catalog: current.draft.catalog.map((entry) =>
+                entry.game_id === gameId
+                  ? {
+                      ...entry,
+                      ...patch
+                    }
+                  : entry
+              )
+            }
           }
         : current
     );
@@ -383,8 +429,8 @@ export function AdminChannelPage() {
         </div>
 
         <div className="hero-stat-card">
-          <strong>{publishedCount}</strong>
-          <span>{adminSession.user.display_name}</span>
+          <strong>v{publication?.published_revision ?? 1}</strong>
+          <span>{hasUnpublishedChanges ? "draft pending" : adminSession.user.display_name}</span>
         </div>
       </section>
 
@@ -445,7 +491,15 @@ export function AdminChannelPage() {
               onClick={() => void handleSave()}
               type="button"
             >
-              保存配置
+              保存草稿
+            </button>
+            <button
+              className="action-button action-button-primary"
+              disabled={!draft || !hasUnpublishedChanges || status === "saving"}
+              onClick={() => void handlePublish()}
+              type="button"
+            >
+              发布到前台
             </button>
             <a className="action-button" href="/admin/operations">
               打开积分与航司后台
@@ -457,6 +511,49 @@ export function AdminChannelPage() {
 
           {error ? <p className="admin-message admin-error">{error}</p> : null}
           {notice ? <p className="admin-message admin-success">{notice}</p> : null}
+        </article>
+
+        <article className="panel">
+          <div className="panel-heading">
+            <div>
+              <p className="panel-kicker">Publication</p>
+              <h2>草稿与发布状态</h2>
+            </div>
+          </div>
+
+          <div className="stats-grid">
+            <div className="stat-card">
+              <span>Draft Revision</span>
+              <strong>{publication?.draft_revision ?? 1}</strong>
+            </div>
+            <div className="stat-card">
+              <span>Published Revision</span>
+              <strong>{publication?.published_revision ?? 1}</strong>
+            </div>
+            <div className="stat-card">
+              <span>Pending Changes</span>
+              <strong>{hasUnpublishedChanges ? "Yes" : "No"}</strong>
+            </div>
+          </div>
+
+          <div className="activity-list">
+            <article className={`activity-item ${hasUnpublishedChanges ? "tone-warn" : "tone-success"}`}>
+              <div className="activity-topline">
+                <strong>
+                  {hasUnpublishedChanges ? "存在未发布草稿" : "草稿已与前台同步"}
+                </strong>
+                <span>
+                  {publication?.last_published_at
+                    ? formatAuditTime(publication.last_published_at)
+                    : "尚未发布"}
+                </span>
+              </div>
+              <p>
+                最近发布人：{publication?.last_published_by ?? "seed"}，当前前台读取的是
+                published 配置。
+              </p>
+            </article>
+          </div>
         </article>
 
         <article className="panel">

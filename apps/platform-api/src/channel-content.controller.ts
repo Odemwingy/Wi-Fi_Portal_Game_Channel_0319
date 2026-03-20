@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Inject,
+  Post,
   Put,
   Query,
   Req
@@ -48,18 +49,44 @@ export class ChannelContentController {
     );
 
     await this.adminAuditService.record(req.trace_context!, {
-      action: "admin.channel.content_updated",
+      action: "admin.channel.content_draft_saved",
       actor: req.admin_context!.user,
       metadata: {
-        airline_code: updated.channel_config.airline_code,
-        locale: updated.channel_config.locale,
-        published_count: updated.catalog.filter((entry) => entry.status === "published").length
+        airline_code: updated.draft.channel_config.airline_code,
+        draft_revision: updated.publication.draft_revision,
+        locale: updated.draft.channel_config.locale,
+        published_count: updated.draft.catalog.filter((entry) => entry.status === "published").length
       },
-      summary: `Updated channel content for ${updated.channel_config.airline_code}/${updated.channel_config.locale}`,
-      target_id: `${updated.channel_config.airline_code}:${updated.channel_config.locale}`,
+      summary: `Saved channel content draft for ${updated.draft.channel_config.airline_code}/${updated.draft.channel_config.locale}`,
+      target_id: `${updated.draft.channel_config.airline_code}:${updated.draft.channel_config.locale}`,
       target_type: "channel_content"
     });
 
     return updated;
+  }
+
+  @Post("content/publish")
+  async publishContent(@Req() req: TraceRequest, @Body() body: unknown) {
+    assertHasRole(req, ["content_admin", "super_admin"]);
+    const published = await this.channelContentService.publishChannelContent(
+      req.trace_context!,
+      body,
+      req.admin_context!.user.username
+    );
+
+    await this.adminAuditService.record(req.trace_context!, {
+      action: "admin.channel.content_published",
+      actor: req.admin_context!.user,
+      metadata: {
+        airline_code: published.published.channel_config.airline_code,
+        locale: published.published.channel_config.locale,
+        published_revision: published.publication.published_revision
+      },
+      summary: `Published channel content for ${published.published.channel_config.airline_code}/${published.published.channel_config.locale}`,
+      target_id: `${published.published.channel_config.airline_code}:${published.published.channel_config.locale}`,
+      target_type: "channel_content"
+    });
+
+    return published;
   }
 }

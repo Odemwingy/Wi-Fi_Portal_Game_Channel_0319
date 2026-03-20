@@ -5,7 +5,7 @@ import {
   airlinePointsConfigSchema,
   airlinePointsDispatchPendingResponseSchema,
   airlinePointsSyncListResponseSchema,
-  channelContentStateSchema,
+  channelContentDocumentSchema,
   channelCatalogEntrySchema,
   passengerPointsSummarySchema,
   pointsAirlineSyncSummarySchema,
@@ -29,7 +29,8 @@ import {
   type AirlinePointsDispatchPendingResponse,
   type AirlinePointsSyncListResponse,
   type AirlinePointsSyncStatus,
-  type ChannelContentState,
+  type ChannelContentDocument,
+  type ChannelContentPublishRequest,
   type ChannelCatalogEntry,
   type ChannelContentUpdateRequest,
   type PassengerPointsSummary,
@@ -92,7 +93,7 @@ export async function getAdminChannelContent(payload: {
   airline_code: string;
   locale: string;
   session_token: string;
-}): Promise<ChannelContentState> {
+}): Promise<ChannelContentDocument> {
   const query = new URLSearchParams({
     airline_code: payload.airline_code,
     locale: payload.locale
@@ -103,7 +104,7 @@ export async function getAdminChannelContent(payload: {
     {
       headers: createAdminHeaders(payload.session_token)
     },
-    channelContentStateSchema.parse
+    channelContentDocumentSchema.parse
   );
 }
 
@@ -111,7 +112,7 @@ export async function updateAdminChannelContent(
   payload: ChannelContentUpdateRequest & {
     session_token: string;
   }
-): Promise<ChannelContentState> {
+): Promise<ChannelContentDocument> {
   return requestJson(
     "/admin/channel/content",
     {
@@ -122,7 +123,26 @@ export async function updateAdminChannelContent(
       headers: createAdminHeaders(payload.session_token),
       method: "PUT"
     },
-    channelContentStateSchema.parse
+    channelContentDocumentSchema.parse
+  );
+}
+
+export async function publishAdminChannelContent(
+  payload: ChannelContentPublishRequest & {
+    session_token: string;
+  }
+): Promise<ChannelContentDocument> {
+  return requestJson(
+    "/admin/channel/content/publish",
+    {
+      body: JSON.stringify({
+        airline_code: payload.airline_code,
+        locale: payload.locale
+      }),
+      headers: createAdminHeaders(payload.session_token),
+      method: "POST"
+    },
+    channelContentDocumentSchema.parse
   );
 }
 

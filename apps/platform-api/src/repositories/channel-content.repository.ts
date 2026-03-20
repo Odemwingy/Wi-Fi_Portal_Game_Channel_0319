@@ -1,6 +1,10 @@
 import { Inject, Injectable } from "@nestjs/common";
 
-import type { ChannelContentState } from "@wifi-portal/game-sdk";
+import {
+  channelContentDocumentSchema,
+  channelContentStateSchema,
+  type ChannelContentDocument
+} from "@wifi-portal/game-sdk";
 
 import { JsonStateStore } from "./json-state-store";
 
@@ -11,12 +15,12 @@ export abstract class ChannelContentRepository {
   abstract get(
     airlineCode: string,
     locale: string
-  ): Promise<ChannelContentState | undefined>;
+  ): Promise<ChannelContentDocument | undefined>;
   abstract set(
     airlineCode: string,
     locale: string,
-    state: ChannelContentState
-  ): Promise<ChannelContentState>;
+    state: ChannelContentDocument
+  ): Promise<ChannelContentDocument>;
 }
 
 @Injectable()
@@ -26,15 +30,34 @@ export class StateStoreChannelContentRepository extends ChannelContentRepository
   }
 
   async get(airlineCode: string, locale: string) {
-    return this.stateStore.get<ChannelContentState>(
-      this.toStorageKey(airlineCode, locale)
-    );
+    const payload = await this.stateStore.get<unknown>(this.toStorageKey(airlineCode, locale));
+    if (!payload) {
+      return undefined;
+    }
+
+    const document = channelContentDocumentSchema.safeParse(payload);
+    if (document.success) {
+      return document.data;
+    }
+
+    const legacyState = channelContentStateSchema.parse(payload);
+    return channelContentDocumentSchema.parse({
+      draft: legacyState,
+      publication: {
+        draft_revision: 1,
+        has_unpublished_changes: false,
+        last_published_at: legacyState.updated_at,
+        last_published_by: "migration",
+        published_revision: 1
+      },
+      published: legacyState
+    });
   }
 
   async set(
     airlineCode: string,
     locale: string,
-    state: ChannelContentState
+    state: ChannelContentDocument
   ) {
     return this.stateStore.set(this.toStorageKey(airlineCode, locale), state, {
       ttl_seconds: CHANNEL_CONTENT_TTL_SECONDS

@@ -526,6 +526,30 @@ textarea:focus {
   gap: 14px;
 }
 
+.stats-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.stat-card {
+  display: grid;
+  gap: 6px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.stat-card span {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.stat-card strong {
+  font-size: 1.4rem;
+}
+
 .admin-flag-grid {
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }

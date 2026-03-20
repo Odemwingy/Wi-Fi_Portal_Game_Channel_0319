@@ -20,7 +20,12 @@ describe("ChannelContentService", () => {
     const content = await service.getChannelContent(trace, "MU", "zh-CN");
     const catalog = await service.getPublicCatalog(trace, "MU", "zh-CN");
 
-    expect(content.catalog).toHaveLength(6);
+    expect(content.draft.catalog).toHaveLength(6);
+    expect(content.publication).toMatchObject({
+      draft_revision: 1,
+      has_unpublished_changes: false,
+      published_revision: 1
+    });
     expect(catalog[0]).toMatchObject({
       categories: ["Featured", "Multiplayer", "Trivia"],
       game_id: "quiz-duel"
@@ -36,7 +41,7 @@ describe("ChannelContentService", () => {
     const current = await service.getChannelContent(trace, "MU", "zh-CN");
 
     const updated = await service.updateChannelContent(trace, {
-      catalog: current.catalog.map((entry, index) => ({
+      catalog: current.draft.catalog.map((entry, index) => ({
         categories: entry.game_id === "runway-rush" ? ["Reaction", "Recently Added"] : entry.categories,
         description:
           entry.game_id === "runway-rush"
@@ -48,22 +53,46 @@ describe("ChannelContentService", () => {
         status: entry.game_id === "cabin-puzzle" ? "hidden" : entry.status
       })),
       channel_config: {
-        ...current.channel_config,
+        ...current.draft.channel_config,
         hero_title: "Freshly configured from the admin console."
       }
     });
 
-    const catalog = await service.getPublicCatalog(trace, "MU", "zh-CN");
+    const catalogBeforePublish = await service.getPublicCatalog(trace, "MU", "zh-CN");
     const channelConfig = await service.getPublicChannelConfig(trace, "MU", "zh-CN");
+    const published = await service.publishChannelContent(
+      trace,
+      {
+        airline_code: "MU",
+        locale: "zh-CN"
+      },
+      "super-admin"
+    );
+    const catalogAfterPublish = await service.getPublicCatalog(trace, "MU", "zh-CN");
+    const publishedConfig = await service.getPublicChannelConfig(trace, "MU", "zh-CN");
 
-    expect(updated.channel_config.hero_title).toBe(
+    expect(updated.draft.channel_config.hero_title).toBe(
       "Freshly configured from the admin console."
     );
-    expect(channelConfig.hero_title).toBe(
+    expect(updated.publication).toMatchObject({
+      draft_revision: 2,
+      has_unpublished_changes: true,
+      published_revision: 1
+    });
+    expect(channelConfig.hero_title).not.toBe(
       "Freshly configured from the admin console."
     );
-    expect(catalog.some((entry) => entry.game_id === "cabin-puzzle")).toBe(false);
-    expect(catalog[0]).toMatchObject({
+    expect(catalogBeforePublish.some((entry) => entry.game_id === "cabin-puzzle")).toBe(true);
+    expect(published.publication).toMatchObject({
+      has_unpublished_changes: false,
+      last_published_by: "super-admin",
+      published_revision: 2
+    });
+    expect(publishedConfig.hero_title).toBe(
+      "Freshly configured from the admin console."
+    );
+    expect(catalogAfterPublish.some((entry) => entry.game_id === "cabin-puzzle")).toBe(false);
+    expect(catalogAfterPublish[0]).toMatchObject({
       categories: ["Featured", "Reaction", "Recently Added"],
       game_id: "runway-rush"
     });

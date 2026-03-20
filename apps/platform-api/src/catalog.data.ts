@@ -1,11 +1,13 @@
 import {
   channelCatalogEntrySchema,
   channelConfigSchema,
+  channelContentDocumentSchema,
   channelContentStateSchema,
   gamePackageMetadataSchema,
   managedChannelCatalogEntrySchema,
   type ChannelCatalogEntry,
   type ChannelConfig,
+  type ChannelContentDocument,
   type ChannelContentState,
   type ManagedChannelCatalogEntry
 } from "@wifi-portal/game-sdk";
@@ -187,6 +189,25 @@ export const buildDefaultChannelContent = (
     channel_config: buildDefaultChannelConfig(airlineCode, locale),
     updated_at: new Date().toISOString()
   });
+
+export const buildDefaultChannelContentDocument = (
+  airlineCode: string,
+  locale: string
+): ChannelContentDocument => {
+  const seeded = buildDefaultChannelContent(airlineCode, locale);
+
+  return channelContentDocumentSchema.parse({
+    draft: seeded,
+    publication: {
+      draft_revision: 1,
+      has_unpublished_changes: false,
+      last_published_at: seeded.updated_at,
+      last_published_by: "seed",
+      published_revision: 1
+    },
+    published: seeded
+  });
+};
 
 export const buildChannelCatalog = (
   content: ChannelContentState
