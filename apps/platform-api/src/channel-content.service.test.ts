@@ -20,7 +20,7 @@ describe("ChannelContentService", () => {
     const content = await service.getChannelContent(trace, "MU", "zh-CN");
     const catalog = await service.getPublicCatalog(trace, "MU", "zh-CN");
 
-    expect(content.draft.catalog).toHaveLength(16);
+    expect(content.draft.catalog).toHaveLength(17);
     expect(content.publication).toMatchObject({
       draft_revision: 1,
       has_unpublished_changes: false,

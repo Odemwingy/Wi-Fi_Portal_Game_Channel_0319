@@ -412,6 +412,31 @@ const packageMetadata = [
       emitsStructuredLogs: true,
       supportsTraceContext: true
     }
+  }),
+  gamePackageMetadataSchema.parse({
+    id: "flight-path-puzzler",
+    name: "Flight Path Puzzler",
+    version: "1.0.0",
+    frontend: {
+      route: "/games/flight-path-puzzler",
+      assetsPath: "/opt/games/flight-path-puzzler/frontend"
+    },
+    server: {
+      image: "registry.local/flight-path-puzzler-server:1.0.0",
+      port: 8104
+    },
+    realtime: {
+      protocol: "sse"
+    },
+    dependencies: [],
+    capabilities: ["single-player", "points-reporting"],
+    healthcheck: {
+      path: "/health"
+    },
+    observability: {
+      emitsStructuredLogs: true,
+      supportsTraceContext: true
+    }
   })
 ];
 
@@ -553,6 +578,8 @@ function getBaseCategories(gameId: string) {
       return ["Single Player", "Memory", "Featured"];
     case "window-view-memory":
       return ["Single Player", "Memory", "Relaxed"];
+    case "flight-path-puzzler":
+      return ["Single Player", "Strategy", "Relaxed"];
     default:
       return ["Single Player", "Puzzle", "Relaxed"];
   }
@@ -590,6 +617,8 @@ function getBaseDescription(gameId: string) {
       return "Single-player pair matching loops built around meal-cart memory and catering cues.";
     case "window-view-memory":
       return "Short scenic recall drills where passengers memorize cabin window views and replay them from memory.";
+    case "flight-path-puzzler":
+      return "Solo route planning rounds where passengers choose the cleanest next waypoint for each cabin-friendly flight segment.";
     default:
       return "Single-player puzzle loops optimized for short sessions.";
   }
