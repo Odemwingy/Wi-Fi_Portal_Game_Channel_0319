@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { startTrace } from "@wifi-portal/shared-observability";
 
+import { BaggageSortShowdownAdapter } from "./game-adapters/baggage-sort-showdown.adapter";
 import { MiniGomokuAdapter } from "./game-adapters/mini-gomoku.adapter";
 import { MemoryMatchDuelAdapter } from "./game-adapters/memory-match-duel.adapter";
 import { QuizDuelAdapter } from "./game-adapters/quiz-duel.adapter";
@@ -10,6 +11,7 @@ import { SignalScrambleAdapter } from "./game-adapters/signal-scramble.adapter";
 import { SpotTheDifferenceRaceAdapter } from "./game-adapters/spot-the-difference-race.adapter";
 import { WordRallyAdapter } from "./game-adapters/word-rally.adapter";
 import { GameRuntimeService } from "./game-runtime.service";
+import { StateStoreBaggageSortShowdownStateRepository } from "./repositories/baggage-sort-showdown-state.repository";
 import { InMemoryJsonStateStore } from "./repositories/json-state-store";
 import { StateStoreMiniGomokuStateRepository } from "./repositories/mini-gomoku-state.repository";
 import { StateStoreMemoryMatchDuelStateRepository } from "./repositories/memory-match-duel-state.repository";
@@ -24,6 +26,9 @@ import { RoomService } from "./room.service";
 function createRuntime(stateStore: InMemoryJsonStateStore, roomService: RoomService) {
   return new GameRuntimeService(
     roomService,
+    new BaggageSortShowdownAdapter(
+      new StateStoreBaggageSortShowdownStateRepository(stateStore)
+    ),
     new MiniGomokuAdapter(new StateStoreMiniGomokuStateRepository(stateStore)),
     new MemoryMatchDuelAdapter(
       new StateStoreMemoryMatchDuelStateRepository(stateStore)
@@ -43,6 +48,148 @@ function createRuntime(stateStore: InMemoryJsonStateStore, roomService: RoomServ
 }
 
 describe("GameRuntimeService", () => {
+  it("supports baggage-sort-showdown rooms with shared bag progression and scoring", async () => {
+    const stateStore = new InMemoryJsonStateStore();
+    const roomService = new RoomService(new StateStoreRoomRepository(stateStore));
+    const runtime = createRuntime(stateStore, roomService);
+    const trace = startTrace();
+
+    const created = await roomService.createRoom(trace, {
+      game_id: "baggage-sort-showdown",
+      host_player_id: "host-1",
+      host_session_id: "sess-host-1",
+      max_players: 2,
+      room_name: "Baggage Showdown Room"
+    });
+
+    await roomService.joinRoom(trace, {
+      player_id: "player-2",
+      room_id: created.room.room_id,
+      session_id: "sess-player-2"
+    });
+
+    const initialSnapshot = await runtime.getGameSnapshot(
+      trace,
+      "baggage-sort-showdown",
+      created.room.room_id
+    );
+
+    expect(initialSnapshot?.state.current_bag).toMatchObject({
+      id: "bag-100",
+      label: "Rollaboard 21",
+      targetLane: "standard"
+    });
+
+    const rejectedSnapshot = await runtime.handleGameEvent(trace, {
+      gameId: "baggage-sort-showdown",
+      payload: {
+        laneId: "fragile"
+      },
+      playerId: "player-2",
+      roomId: created.room.room_id,
+      seq: 1,
+      type: "game_event"
+    });
+
+    expect(rejectedSnapshot?.state.current_bag.id).toBe("bag-100");
+    expect(rejectedSnapshot?.state.last_action).toMatchObject({
+      chosenLane: "fragile",
+      correctLane: "standard",
+      playerId: "player-2",
+      status: "rejected"
+    });
+
+    await runtime.handleGameEvent(trace, {
+      gameId: "baggage-sort-showdown",
+      payload: {
+        laneId: "standard"
+      },
+      playerId: "host-1",
+      roomId: created.room.room_id,
+      seq: 1,
+      type: "game_event"
+    });
+    await runtime.handleGameEvent(trace, {
+      gameId: "baggage-sort-showdown",
+      payload: {
+        laneId: "priority"
+      },
+      playerId: "player-2",
+      roomId: created.room.room_id,
+      seq: 2,
+      type: "game_event"
+    });
+    await runtime.handleGameEvent(trace, {
+      gameId: "baggage-sort-showdown",
+      payload: {
+        laneId: "fragile"
+      },
+      playerId: "host-1",
+      roomId: created.room.room_id,
+      seq: 2,
+      type: "game_event"
+    });
+    await runtime.handleGameEvent(trace, {
+      gameId: "baggage-sort-showdown",
+      payload: {
+        laneId: "oversize"
+      },
+      playerId: "player-2",
+      roomId: created.room.room_id,
+      seq: 3,
+      type: "game_event"
+    });
+    await runtime.handleGameEvent(trace, {
+      gameId: "baggage-sort-showdown",
+      payload: {
+        laneId: "priority"
+      },
+      playerId: "player-2",
+      roomId: created.room.room_id,
+      seq: 4,
+      type: "game_event"
+    });
+    await runtime.handleGameEvent(trace, {
+      gameId: "baggage-sort-showdown",
+      payload: {
+        laneId: "fragile"
+      },
+      playerId: "host-1",
+      roomId: created.room.room_id,
+      seq: 3,
+      type: "game_event"
+    });
+
+    const finalSnapshot = await runtime.handleGameEvent(trace, {
+      gameId: "baggage-sort-showdown",
+      payload: {
+        laneId: "standard"
+      },
+      playerId: "player-2",
+      roomId: created.room.room_id,
+      seq: 5,
+      type: "game_event"
+    });
+
+    expect(finalSnapshot?.state.is_completed).toBe(true);
+    expect(finalSnapshot?.state.current_bag).toBeNull();
+    expect(finalSnapshot?.state.resolved_bag_ids).toEqual([
+      "bag-100",
+      "bag-220",
+      "bag-330",
+      "bag-440",
+      "bag-550",
+      "bag-660"
+    ]);
+    expect(finalSnapshot?.state.scores).toEqual({
+      "host-1": 9,
+      "player-2": 20
+    });
+    expect(finalSnapshot?.state.winner_player_ids).toEqual(["player-2"]);
+
+    runtime.onModuleDestroy();
+  });
+
   it("creates quiz-duel runtime state from room lifecycle and advances through all rounds", async () => {
     const stateStore = new InMemoryJsonStateStore();
     const roomService = new RoomService(new StateStoreRoomRepository(stateStore));

@@ -39,6 +39,31 @@ const packageMetadata = [
     }
   }),
   gamePackageMetadataSchema.parse({
+    id: "baggage-sort-showdown",
+    name: "Baggage Sort Showdown",
+    version: "1.0.0",
+    frontend: {
+      route: "/games/baggage-sort-showdown",
+      assetsPath: "/opt/games/baggage-sort-showdown/frontend"
+    },
+    server: {
+      image: "registry.local/baggage-sort-showdown-server:1.0.0",
+      port: 8097
+    },
+    realtime: {
+      protocol: "websocket"
+    },
+    dependencies: ["redis"],
+    capabilities: ["multiplayer", "leaderboard", "invite-code", "points-reporting"],
+    healthcheck: {
+      path: "/health"
+    },
+    observability: {
+      emitsStructuredLogs: true,
+      supportsTraceContext: true
+    }
+  }),
+  gamePackageMetadataSchema.parse({
     id: "cabin-puzzle",
     name: "Cabin Puzzle",
     version: "1.0.0",
@@ -350,6 +375,8 @@ function getBaseCategories(gameId: string) {
   switch (gameId) {
     case "quiz-duel":
       return ["Multiplayer", "Trivia", "Featured"];
+    case "baggage-sort-showdown":
+      return ["Multiplayer", "Reaction", "Featured"];
     case "word-rally":
       return ["Multiplayer", "Word", "Featured"];
     case "memory-match-duel":
@@ -373,6 +400,8 @@ function getBaseDescription(gameId: string) {
   switch (gameId) {
     case "quiz-duel":
       return "Fast head-to-head quiz battles for onboard LAN play.";
+    case "baggage-sort-showdown":
+      return "Shared baggage queue reaction battles where the first correct classification wins the bag.";
     case "word-rally":
       return "Letter-based multiplayer word rounds designed for invite-code matches.";
     case "memory-match-duel":

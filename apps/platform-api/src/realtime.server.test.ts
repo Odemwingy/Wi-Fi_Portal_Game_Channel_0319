@@ -9,6 +9,7 @@ import { startTrace } from "@wifi-portal/shared-observability";
 import { afterEach, describe, expect, it } from "vitest";
 import { WebSocket } from "ws";
 
+import { BaggageSortShowdownAdapter } from "./game-adapters/baggage-sort-showdown.adapter";
 import { MiniGomokuAdapter } from "./game-adapters/mini-gomoku.adapter";
 import { MemoryMatchDuelAdapter } from "./game-adapters/memory-match-duel.adapter";
 import { QuizDuelAdapter } from "./game-adapters/quiz-duel.adapter";
@@ -18,6 +19,7 @@ import { SpotTheDifferenceRaceAdapter } from "./game-adapters/spot-the-differenc
 import { WordRallyAdapter } from "./game-adapters/word-rally.adapter";
 import { GameRuntimeService } from "./game-runtime.service";
 import { PlatformMetricsService } from "./platform-metrics.service";
+import { StateStoreBaggageSortShowdownStateRepository } from "./repositories/baggage-sort-showdown-state.repository";
 import { InMemoryJsonStateStore } from "./repositories/json-state-store";
 import { StateStoreMiniGomokuStateRepository } from "./repositories/mini-gomoku-state.repository";
 import { StateStoreMemoryMatchDuelStateRepository } from "./repositories/memory-match-duel-state.repository";
@@ -313,6 +315,9 @@ async function createRealtimeFixture(
   const roomService = new RoomService(new StateStoreRoomRepository(stateStore));
   const runtime = new GameRuntimeService(
     roomService,
+    new BaggageSortShowdownAdapter(
+      new StateStoreBaggageSortShowdownStateRepository(stateStore)
+    ),
     new MiniGomokuAdapter(new StateStoreMiniGomokuStateRepository(stateStore)),
     new MemoryMatchDuelAdapter(
       new StateStoreMemoryMatchDuelStateRepository(stateStore)

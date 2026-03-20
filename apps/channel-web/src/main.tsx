@@ -4,6 +4,7 @@ import ReactDOM from "react-dom/client";
 import { AdminChannelPage } from "./AdminChannelPage";
 import { AdminOperationsPage } from "./AdminOperationsPage";
 import { App } from "./App";
+import { BaggageSortShowdownPackagePage } from "./BaggageSortShowdownPackagePage";
 import { CabinPuzzlePackagePage } from "./CabinPuzzlePackagePage";
 import { MemoryMatchDuelPackagePage } from "./MemoryMatchDuelPackagePage";
 import { MiniGomokuPackagePage } from "./MiniGomokuPackagePage";
@@ -25,7 +26,9 @@ const RootComponent =
     : pathname === "/portal/host"
       ? PortalHostPage
     : pathname === "/games/quiz-duel"
-    ? QuizDuelPackagePage
+      ? QuizDuelPackagePage
+      : pathname === "/games/baggage-sort-showdown"
+        ? BaggageSortShowdownPackagePage
     : pathname === "/games/cabin-puzzle"
       ? CabinPuzzlePackagePage
       : pathname === "/games/mini-gomoku"

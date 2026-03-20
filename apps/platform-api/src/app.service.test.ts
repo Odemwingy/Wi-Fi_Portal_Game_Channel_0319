@@ -33,9 +33,10 @@ describe("AppService", () => {
   it("returns a channel catalog backed by managed package metadata", async () => {
     const catalog = await service.getCatalog(startTrace(), "MU", "zh-CN");
 
-    expect(catalog).toHaveLength(9);
+    expect(catalog).toHaveLength(10);
     expect(catalog.map((entry) => entry.game_id)).toEqual([
       "quiz-duel",
+      "baggage-sort-showdown",
       "cabin-puzzle",
       "word-rally",
       "memory-match-duel",

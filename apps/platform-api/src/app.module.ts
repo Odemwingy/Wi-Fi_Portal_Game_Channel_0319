@@ -21,6 +21,7 @@ import {
 } from "./airline-points.adapter";
 import { ChannelContentController } from "./channel-content.controller";
 import { ChannelContentService } from "./channel-content.service";
+import { BaggageSortShowdownAdapter } from "./game-adapters/baggage-sort-showdown.adapter";
 import { MiniGomokuAdapter } from "./game-adapters/mini-gomoku.adapter";
 import { MemoryMatchDuelAdapter } from "./game-adapters/memory-match-duel.adapter";
 import { QuizDuelAdapter } from "./game-adapters/quiz-duel.adapter";
@@ -46,6 +47,10 @@ import { PointsRulesService } from "./points-rules.service";
 import { PointsService } from "./points.service";
 import { RewardsController } from "./rewards.controller";
 import { RewardsService } from "./rewards.service";
+import {
+  BaggageSortShowdownStateRepository,
+  StateStoreBaggageSortShowdownStateRepository
+} from "./repositories/baggage-sort-showdown-state.repository";
 import {
   MemoryMatchDuelStateRepository,
   StateStoreMemoryMatchDuelStateRepository
@@ -153,6 +158,7 @@ import { TraceMiddleware } from "./trace.middleware";
     RewardsService,
     RoomService,
     GameRuntimeService,
+    BaggageSortShowdownAdapter,
     MiniGomokuAdapter,
     MemoryMatchDuelAdapter,
     QuizDuelAdapter,
@@ -201,6 +207,10 @@ import { TraceMiddleware } from "./trace.middleware";
     {
       provide: RoomRepository,
       useClass: StateStoreRoomRepository
+    },
+    {
+      provide: BaggageSortShowdownStateRepository,
+      useClass: StateStoreBaggageSortShowdownStateRepository
     },
     {
       provide: QuizDuelStateRepository,
