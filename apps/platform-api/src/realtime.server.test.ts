@@ -9,6 +9,7 @@ import { startTrace } from "@wifi-portal/shared-observability";
 import { afterEach, describe, expect, it } from "vitest";
 import { WebSocket } from "ws";
 
+import { AirlineTriviaTeamsAdapter } from "./game-adapters/airline-trivia-teams.adapter";
 import { CabinCardClashAdapter } from "./game-adapters/cabin-card-clash.adapter";
 import { BaggageSortShowdownAdapter } from "./game-adapters/baggage-sort-showdown.adapter";
 import { MiniGomokuAdapter } from "./game-adapters/mini-gomoku.adapter";
@@ -22,6 +23,7 @@ import { GameRuntimeService } from "./game-runtime.service";
 import { PlatformMetricsService } from "./platform-metrics.service";
 import { StateStoreCabinCardClashStateRepository } from "./repositories/cabin-card-clash-state.repository";
 import { StateStoreBaggageSortShowdownStateRepository } from "./repositories/baggage-sort-showdown-state.repository";
+import { StateStoreAirlineTriviaTeamsStateRepository } from "./repositories/airline-trivia-teams-state.repository";
 import { InMemoryJsonStateStore } from "./repositories/json-state-store";
 import { StateStoreMiniGomokuStateRepository } from "./repositories/mini-gomoku-state.repository";
 import { StateStoreMemoryMatchDuelStateRepository } from "./repositories/memory-match-duel-state.repository";
@@ -317,6 +319,9 @@ async function createRealtimeFixture(
   const roomService = new RoomService(new StateStoreRoomRepository(stateStore));
   const runtime = new GameRuntimeService(
     roomService,
+    new AirlineTriviaTeamsAdapter(
+      new StateStoreAirlineTriviaTeamsStateRepository(stateStore)
+    ),
     new CabinCardClashAdapter(
       new StateStoreCabinCardClashStateRepository(stateStore)
     ),

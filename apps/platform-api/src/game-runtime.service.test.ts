@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { startTrace } from "@wifi-portal/shared-observability";
 
+import { AirlineTriviaTeamsAdapter } from "./game-adapters/airline-trivia-teams.adapter";
 import { CabinCardClashAdapter } from "./game-adapters/cabin-card-clash.adapter";
 import { BaggageSortShowdownAdapter } from "./game-adapters/baggage-sort-showdown.adapter";
 import { MiniGomokuAdapter } from "./game-adapters/mini-gomoku.adapter";
@@ -14,6 +15,7 @@ import { WordRallyAdapter } from "./game-adapters/word-rally.adapter";
 import { GameRuntimeService } from "./game-runtime.service";
 import { StateStoreCabinCardClashStateRepository } from "./repositories/cabin-card-clash-state.repository";
 import { StateStoreBaggageSortShowdownStateRepository } from "./repositories/baggage-sort-showdown-state.repository";
+import { StateStoreAirlineTriviaTeamsStateRepository } from "./repositories/airline-trivia-teams-state.repository";
 import { InMemoryJsonStateStore } from "./repositories/json-state-store";
 import { StateStoreMiniGomokuStateRepository } from "./repositories/mini-gomoku-state.repository";
 import { StateStoreMemoryMatchDuelStateRepository } from "./repositories/memory-match-duel-state.repository";
@@ -28,6 +30,9 @@ import { RoomService } from "./room.service";
 function createRuntime(stateStore: InMemoryJsonStateStore, roomService: RoomService) {
   return new GameRuntimeService(
     roomService,
+    new AirlineTriviaTeamsAdapter(
+      new StateStoreAirlineTriviaTeamsStateRepository(stateStore)
+    ),
     new CabinCardClashAdapter(
       new StateStoreCabinCardClashStateRepository(stateStore)
     ),
@@ -53,6 +58,90 @@ function createRuntime(stateStore: InMemoryJsonStateStore, roomService: RoomServ
 }
 
 describe("GameRuntimeService", () => {
+  it("supports airline-trivia-teams rooms with team scoring across 2-4 passengers", async () => {
+    const stateStore = new InMemoryJsonStateStore();
+    const roomService = new RoomService(new StateStoreRoomRepository(stateStore));
+    const runtime = createRuntime(stateStore, roomService);
+    const trace = startTrace();
+
+    const created = await roomService.createRoom(trace, {
+      game_id: "airline-trivia-teams",
+      host_player_id: "host-1",
+      host_session_id: "sess-host-1",
+      max_players: 4,
+      room_name: "Airline Trivia Teams Room"
+    });
+
+    await roomService.joinRoom(trace, {
+      player_id: "player-2",
+      room_id: created.room.room_id,
+      session_id: "sess-player-2"
+    });
+    await roomService.joinRoom(trace, {
+      player_id: "player-3",
+      room_id: created.room.room_id,
+      session_id: "sess-player-3"
+    });
+
+    const initialSnapshot = await runtime.getGameSnapshot(
+      trace,
+      "airline-trivia-teams",
+      created.room.room_id
+    );
+
+    expect(initialSnapshot?.state.player_teams).toEqual({
+      "host-1": "team-a",
+      "player-2": "team-b",
+      "player-3": "team-a"
+    });
+    expect(initialSnapshot?.state.team_scores).toEqual({
+      "team-a": 0,
+      "team-b": 0
+    });
+
+    await runtime.handleGameEvent(trace, {
+      gameId: "airline-trivia-teams",
+      payload: { answer: "B" },
+      playerId: "host-1",
+      roomId: created.room.room_id,
+      seq: 1,
+      type: "game_event"
+    });
+    await runtime.handleGameEvent(trace, {
+      gameId: "airline-trivia-teams",
+      payload: { answer: "A" },
+      playerId: "player-2",
+      roomId: created.room.room_id,
+      seq: 1,
+      type: "game_event"
+    });
+    const roundOneSnapshot = await runtime.handleGameEvent(trace, {
+      gameId: "airline-trivia-teams",
+      payload: { answer: "B" },
+      playerId: "player-3",
+      roomId: created.room.room_id,
+      seq: 1,
+      type: "game_event"
+    });
+
+    expect(roundOneSnapshot?.state.current_round_number).toBe(2);
+    expect(roundOneSnapshot?.state.last_completed_round).toMatchObject({
+      roundNumber: 1,
+      winningTeamIds: ["team-a"]
+    });
+    expect(roundOneSnapshot?.state.scores).toEqual({
+      "host-1": 6,
+      "player-2": 0,
+      "player-3": 6
+    });
+    expect(roundOneSnapshot?.state.team_scores).toEqual({
+      "team-a": 2,
+      "team-b": 0
+    });
+
+    runtime.onModuleDestroy();
+  });
+
   it("supports cabin-card-clash rooms with turn-based round resolution", async () => {
     const stateStore = new InMemoryJsonStateStore();
     const roomService = new RoomService(new StateStoreRoomRepository(stateStore));

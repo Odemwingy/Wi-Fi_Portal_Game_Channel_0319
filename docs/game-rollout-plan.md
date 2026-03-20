@@ -7,8 +7,9 @@
 - PRD 要求总计 `25` 款游戏，其中 `15` 款支持单机 + 联机对战，`10` 款为单机游戏。
 - 技术架构采用统一 `Game Channel + Game Platform + Game Packages`，联机仅考虑机上局域网内对战。
 - 首发目标不是一次性交付 25 款，而是先用 `2-5` 款代表性游戏跑通频道、启动器、房间、实时协议、积分与权益闭环。
-- 当前代码基线里已经有十一款验证游戏：
+- 当前代码基线里已经有十二款验证游戏：
   - `quiz-duel`：双人答题对战，已接入房间、WS、积分、独立 package 页面。
+  - `airline-trivia-teams`：2-4 人团队问答，已接入房间、WS、团队计分和独立 package 页面。
   - `cabin-puzzle`：单机拼图，已接入启动器与独立 package 页面。
   - `word-rally`：双人词汇回合对战，已接入房间、WS、积分与独立 package 页面。
   - `memory-match-duel`：双人翻牌配对，已接入房间、WS、积分与独立 package 页面。
@@ -54,7 +55,7 @@
 | `signal-scramble` | Signal Scramble | 图案连线 | 双人异步竞速 | M | P1 | Wave B | 已实现 | 可比较完成时间和得分 |
 | `baggage-sort-showdown` | Baggage Sort Showdown | 分类反应 | 双人低频同步 | M | P1 | Wave B | 已实现 | 偏休闲，适合大众用户 |
 | `cabin-card-clash` | Cabin Card Clash | 轻卡牌对战 | 双人 turn-based | M | P1 | Wave B | 已实现 | 规则需刻意收轻 |
-| `airline-trivia-teams` | Airline Trivia Teams | 多人问答 | 2-4 人 turn-based | M | P2 | Wave B | 规划中 | 适合后续多人房间扩展 |
+| `airline-trivia-teams` | Airline Trivia Teams | 多人问答 | 2-4 人 turn-based | M | P2 | Wave B | 已实现 | 适合后续多人房间扩展 |
 | `tap-beat-battle` | Tap Beat Battle | 节奏对拍 | 双人低频同步 | M | P2 | Wave C | 规划中 | 需要额外关注音频策略 |
 | `route-builder-duel` | Route Builder Duel | 路线规划 | 双人 turn-based | M | P2 | Wave C | 规划中 | 偏策略，适合高复玩 |
 | `puzzle-race-grid` | Puzzle Race Grid | 网格消除竞速 | 双人状态对比 | L | P2 | Wave C | 规划中 | 玩法成熟，但同步与动画更复杂 |
@@ -191,6 +192,6 @@
 
 ## 8. 下一步执行建议
 
-1. `spot-the-difference-race`、`mini-gomoku`、`seat-map-strategy`、`signal-scramble`、`baggage-sort-showdown` 和 `cabin-card-clash` 已经落地，下一步优先转向下一个 Wave B 游戏 `airline-trivia-teams`。
+1. `spot-the-difference-race`、`mini-gomoku`、`seat-map-strategy`、`signal-scramble`、`baggage-sort-showdown`、`cabin-card-clash` 和 `airline-trivia-teams` 已经落地，下一步优先转向下一个 Wave B 游戏 `tap-beat-battle`。
 2. 在后台配置能力落地前，先用静态 catalog 驱动首发内容，避免卡住 package 接入节奏。
 3. 所有新游戏必须先过 `single-player` 或 `multiplayer` 接入模板，不允许临时特判。

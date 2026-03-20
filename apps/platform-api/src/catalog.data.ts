@@ -39,6 +39,31 @@ const packageMetadata = [
     }
   }),
   gamePackageMetadataSchema.parse({
+    id: "airline-trivia-teams",
+    name: "Airline Trivia Teams",
+    version: "1.0.0",
+    frontend: {
+      route: "/games/airline-trivia-teams",
+      assetsPath: "/opt/games/airline-trivia-teams/frontend"
+    },
+    server: {
+      image: "registry.local/airline-trivia-teams-server:1.0.0",
+      port: 8099
+    },
+    realtime: {
+      protocol: "websocket"
+    },
+    dependencies: ["redis"],
+    capabilities: ["multiplayer", "leaderboard", "invite-code", "points-reporting"],
+    healthcheck: {
+      path: "/health"
+    },
+    observability: {
+      emitsStructuredLogs: true,
+      supportsTraceContext: true
+    }
+  }),
+  gamePackageMetadataSchema.parse({
     id: "cabin-card-clash",
     name: "Cabin Card Clash",
     version: "1.0.0",
@@ -400,6 +425,8 @@ function getBaseCategories(gameId: string) {
   switch (gameId) {
     case "quiz-duel":
       return ["Multiplayer", "Trivia", "Featured"];
+    case "airline-trivia-teams":
+      return ["Multiplayer", "Trivia", "Featured"];
     case "cabin-card-clash":
       return ["Multiplayer", "Cards", "Featured"];
     case "baggage-sort-showdown":
@@ -427,6 +454,8 @@ function getBaseDescription(gameId: string) {
   switch (gameId) {
     case "quiz-duel":
       return "Fast head-to-head quiz battles for onboard LAN play.";
+    case "airline-trivia-teams":
+      return "Team-scored airline trivia rounds for 2-4 passengers inside the same cabin room.";
     case "cabin-card-clash":
       return "A deliberately lightweight two-player cabin card duel with fast round resolution.";
     case "baggage-sort-showdown":

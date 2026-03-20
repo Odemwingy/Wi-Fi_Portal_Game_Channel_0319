@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 
 import { AdminChannelPage } from "./AdminChannelPage";
 import { AdminOperationsPage } from "./AdminOperationsPage";
+import { AirlineTriviaTeamsPackagePage } from "./AirlineTriviaTeamsPackagePage";
 import { App } from "./App";
 import { BaggageSortShowdownPackagePage } from "./BaggageSortShowdownPackagePage";
 import { CabinCardClashPackagePage } from "./CabinCardClashPackagePage";
@@ -28,6 +29,8 @@ const RootComponent =
       ? PortalHostPage
     : pathname === "/games/quiz-duel"
       ? QuizDuelPackagePage
+      : pathname === "/games/airline-trivia-teams"
+        ? AirlineTriviaTeamsPackagePage
       : pathname === "/games/cabin-card-clash"
         ? CabinCardClashPackagePage
       : pathname === "/games/baggage-sort-showdown"

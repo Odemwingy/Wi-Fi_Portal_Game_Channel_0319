@@ -21,6 +21,7 @@ import {
 } from "./airline-points.adapter";
 import { ChannelContentController } from "./channel-content.controller";
 import { ChannelContentService } from "./channel-content.service";
+import { AirlineTriviaTeamsAdapter } from "./game-adapters/airline-trivia-teams.adapter";
 import { CabinCardClashAdapter } from "./game-adapters/cabin-card-clash.adapter";
 import { BaggageSortShowdownAdapter } from "./game-adapters/baggage-sort-showdown.adapter";
 import { MiniGomokuAdapter } from "./game-adapters/mini-gomoku.adapter";
@@ -64,6 +65,10 @@ import {
   AdminAuditRepository,
   StateStoreAdminAuditRepository
 } from "./repositories/admin-audit.repository";
+import {
+  AirlineTriviaTeamsStateRepository,
+  StateStoreAirlineTriviaTeamsStateRepository
+} from "./repositories/airline-trivia-teams-state.repository";
 import {
   AirlinePointsConfigRepository,
   StateStoreAirlinePointsConfigRepository
@@ -163,6 +168,7 @@ import { TraceMiddleware } from "./trace.middleware";
     RewardsService,
     RoomService,
     GameRuntimeService,
+    AirlineTriviaTeamsAdapter,
     CabinCardClashAdapter,
     BaggageSortShowdownAdapter,
     MiniGomokuAdapter,
@@ -213,6 +219,10 @@ import { TraceMiddleware } from "./trace.middleware";
     {
       provide: RoomRepository,
       useClass: StateStoreRoomRepository
+    },
+    {
+      provide: AirlineTriviaTeamsStateRepository,
+      useClass: StateStoreAirlineTriviaTeamsStateRepository
     },
     {
       provide: CabinCardClashStateRepository,
