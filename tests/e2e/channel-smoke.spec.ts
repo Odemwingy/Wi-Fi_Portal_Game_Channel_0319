@@ -5,7 +5,7 @@ test("passenger channel homepage loads bootstrap dashboard", async ({ page }) =>
 
   await expect(
     page.getByRole("heading", {
-      name: "机上频道、联机房间与实时游戏状态已经接通"
+      name: "欢迎进入机上游戏频道"
     })
   ).toBeVisible();
   await expect(
@@ -13,10 +13,10 @@ test("passenger channel homepage loads bootstrap dashboard", async ({ page }) =>
   ).toBeVisible();
   await expect(
     page.getByRole("heading", {
-      name: "积分中心"
+      name: "面向乘客的频道首页"
     })
   ).toBeVisible();
-  await expect(page.getByText("Game Package Launcher")).toBeVisible();
+  await expect(page.getByText("联机专区")).toBeVisible();
 });
 
 test("admin channel page can log in and load published content controls", async ({

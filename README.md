@@ -109,6 +109,7 @@ This starts:
 The frontend container serves the passenger channel shell and uses route-level lazy loading for package pages. Open:
 
 - `http://127.0.0.1:8080/`
+- `http://127.0.0.1:8080/lab/channel`
 - `http://127.0.0.1:8080/admin/channel`
 - `http://127.0.0.1:8080/admin/operations`
 

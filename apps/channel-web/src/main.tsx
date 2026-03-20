@@ -21,7 +21,10 @@ function loadRoute<TModule>(
 }
 
 const routes: Record<string, React.LazyExoticComponent<React.ComponentType>> = {
-  "/": loadRoute(() => import("./App"), (module) => module.App),
+  "/": loadRoute(
+    () => import("./PassengerChannelPage"),
+    (module) => module.PassengerChannelPage
+  ),
   "/admin/channel": loadRoute(
     () => import("./AdminChannelPage"),
     (module) => module.AdminChannelPage
@@ -30,6 +33,7 @@ const routes: Record<string, React.LazyExoticComponent<React.ComponentType>> = {
     () => import("./AdminOperationsPage"),
     (module) => module.AdminOperationsPage
   ),
+  "/lab/channel": loadRoute(() => import("./App"), (module) => module.App),
   "/portal/host": loadRoute(
     () => import("./PortalHostPage"),
     (module) => module.PortalHostPage
