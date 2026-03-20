@@ -5,6 +5,7 @@ import { startTrace } from "@wifi-portal/shared-observability";
 import { AirlineTriviaTeamsAdapter } from "./game-adapters/airline-trivia-teams.adapter";
 import { CabinCardClashAdapter } from "./game-adapters/cabin-card-clash.adapter";
 import { BaggageSortShowdownAdapter } from "./game-adapters/baggage-sort-showdown.adapter";
+import { CrewCoordinationAdapter } from "./game-adapters/crew-coordination.adapter";
 import { MiniGomokuAdapter } from "./game-adapters/mini-gomoku.adapter";
 import { MemoryMatchDuelAdapter } from "./game-adapters/memory-match-duel.adapter";
 import { PuzzleRaceGridAdapter } from "./game-adapters/puzzle-race-grid.adapter";
@@ -20,6 +21,7 @@ import { GameRuntimeService } from "./game-runtime.service";
 import { StateStoreCabinCardClashStateRepository } from "./repositories/cabin-card-clash-state.repository";
 import { StateStoreBaggageSortShowdownStateRepository } from "./repositories/baggage-sort-showdown-state.repository";
 import { StateStoreAirlineTriviaTeamsStateRepository } from "./repositories/airline-trivia-teams-state.repository";
+import { StateStoreCrewCoordinationStateRepository } from "./repositories/crew-coordination-state.repository";
 import { InMemoryJsonStateStore } from "./repositories/json-state-store";
 import { StateStoreMiniGomokuStateRepository } from "./repositories/mini-gomoku-state.repository";
 import { StateStoreMemoryMatchDuelStateRepository } from "./repositories/memory-match-duel-state.repository";
@@ -46,6 +48,9 @@ function createRuntime(stateStore: InMemoryJsonStateStore, roomService: RoomServ
     ),
     new BaggageSortShowdownAdapter(
       new StateStoreBaggageSortShowdownStateRepository(stateStore)
+    ),
+    new CrewCoordinationAdapter(
+      new StateStoreCrewCoordinationStateRepository(stateStore)
     ),
     new MiniGomokuAdapter(new StateStoreMiniGomokuStateRepository(stateStore)),
     new MemoryMatchDuelAdapter(
@@ -1468,6 +1473,127 @@ describe("GameRuntimeService", () => {
     expect(finalSnapshot?.state.scores).toEqual({
       "host-1": 14,
       "player-2": 0
+    });
+
+    runtime.onModuleDestroy();
+  });
+
+  it("supports crew-coordination rooms with 3-player relay scoring and shared win state", async () => {
+    const stateStore = new InMemoryJsonStateStore();
+    const roomService = new RoomService(new StateStoreRoomRepository(stateStore));
+    const runtime = createRuntime(stateStore, roomService);
+    const trace = startTrace();
+
+    const created = await roomService.createRoom(trace, {
+      game_id: "crew-coordination",
+      host_player_id: "host-1",
+      host_session_id: "sess-host-1",
+      max_players: 4,
+      room_name: "Crew Coordination Room"
+    });
+
+    await roomService.joinRoom(trace, {
+      player_id: "player-2",
+      room_id: created.room.room_id,
+      session_id: "sess-player-2"
+    });
+    await roomService.joinRoom(trace, {
+      player_id: "player-3",
+      room_id: created.room.room_id,
+      session_id: "sess-player-3"
+    });
+
+    await runtime.handleGameEvent(trace, {
+      gameId: "crew-coordination",
+      payload: { taskId: "task-preflight-brief" },
+      playerId: "host-1",
+      roomId: created.room.room_id,
+      seq: 1,
+      type: "game_event"
+    });
+    await runtime.handleGameEvent(trace, {
+      gameId: "crew-coordination",
+      payload: { taskId: "task-welcome-manifest" },
+      playerId: "player-2",
+      roomId: created.room.room_id,
+      seq: 1,
+      type: "game_event"
+    });
+    await runtime.handleGameEvent(trace, {
+      gameId: "crew-coordination",
+      payload: { taskId: "task-galley-stock" },
+      playerId: "player-3",
+      roomId: created.room.room_id,
+      seq: 1,
+      type: "game_event"
+    });
+    await runtime.handleGameEvent(trace, {
+      gameId: "crew-coordination",
+      payload: { taskId: "task-turbulence-script" },
+      playerId: "host-1",
+      roomId: created.room.room_id,
+      seq: 2,
+      type: "game_event"
+    });
+    await runtime.handleGameEvent(trace, {
+      gameId: "crew-coordination",
+      payload: { taskId: "task-arrival-secure" },
+      playerId: "player-2",
+      roomId: created.room.room_id,
+      seq: 2,
+      type: "game_event"
+    });
+    await runtime.handleGameEvent(trace, {
+      gameId: "crew-coordination",
+      payload: { taskId: "task-meal-reset" },
+      playerId: "player-3",
+      roomId: created.room.room_id,
+      seq: 2,
+      type: "game_event"
+    });
+    await runtime.handleGameEvent(trace, {
+      gameId: "crew-coordination",
+      payload: { taskId: "task-aisle-safety" },
+      playerId: "host-1",
+      roomId: created.room.room_id,
+      seq: 3,
+      type: "game_event"
+    });
+    const snapshot = await runtime.handleGameEvent(trace, {
+      gameId: "crew-coordination",
+      payload: { taskId: "task-aft-cabin-check" },
+      playerId: "player-2",
+      roomId: created.room.room_id,
+      seq: 3,
+      type: "game_event"
+    });
+
+    expect(snapshot?.state.is_completed).toBe(true);
+    expect(snapshot?.state.mission_status).toBe("successful");
+    expect(snapshot?.state.team_score).toBe(48);
+    expect(snapshot?.state.player_scores).toEqual({
+      "host-1": 19,
+      "player-2": 17,
+      "player-3": 12
+    });
+    expect(snapshot?.state.player_roles).toEqual({
+      "host-1": "captain",
+      "player-2": "purser",
+      "player-3": "galley"
+    });
+    expect(snapshot?.state.winner_player_ids).toEqual([
+      "host-1",
+      "player-2",
+      "player-3"
+    ]);
+    expect(snapshot?.state.last_move).toMatchObject({
+      playerId: "player-2",
+      pointsAwarded: 4,
+      relayBonus: 1,
+      role: "cabin",
+      roleMatchBonus: 0,
+      taskId: "task-aft-cabin-check",
+      zone: "aft"
     });
 
     runtime.onModuleDestroy();

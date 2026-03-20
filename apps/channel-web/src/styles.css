@@ -1365,6 +1365,89 @@ textarea:focus {
   box-shadow: inset 0 0 0 2px rgba(42, 144, 106, 0.36);
 }
 
+.crew-banner {
+  display: grid;
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.crew-banner div,
+.crew-role-card,
+.crew-task-card {
+  border: 1px solid rgba(120, 174, 214, 0.18);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.crew-banner div {
+  padding: 1rem 1.1rem;
+}
+
+.crew-banner span,
+.crew-role-card span,
+.crew-task-card small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.crew-banner strong,
+.crew-role-card strong {
+  display: block;
+  margin-top: 0.35rem;
+  color: #173141;
+}
+
+.crew-role-strip {
+  display: grid;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+}
+
+.crew-role-card {
+  padding: 0.95rem 1rem;
+}
+
+.crew-role-card p,
+.crew-task-card p {
+  margin: 0.45rem 0;
+  color: rgba(23, 49, 65, 0.72);
+}
+
+.crew-role-card em,
+.crew-task-card em {
+  color: #b46b00;
+  font-style: normal;
+}
+
+.crew-task-grid {
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.crew-task-card {
+  padding: 1rem;
+  color: #173141;
+  text-align: left;
+}
+
+.crew-task-card:disabled {
+  opacity: 0.72;
+  cursor: not-allowed;
+}
+
+.crew-task-card div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.6rem;
+}
+
 .launcher-placeholder {
   padding: 18px 0 0;
 }
@@ -1835,6 +1918,10 @@ textarea:focus {
     grid-template-columns: 1fr 1fr;
   }
 
+  .crew-banner {
+    grid-template-columns: 1fr 1fr;
+  }
+
   .panel,
   .panel-span-2 {
     grid-column: span 12;
@@ -1876,6 +1963,9 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 
+  .crew-banner,
+  .crew-role-strip,
+  .crew-task-grid,
   .defense-loadout,
   .defense-grid {
     grid-template-columns: 1fr;

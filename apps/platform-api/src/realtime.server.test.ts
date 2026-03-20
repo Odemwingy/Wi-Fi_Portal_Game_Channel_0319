@@ -12,6 +12,7 @@ import { WebSocket } from "ws";
 import { AirlineTriviaTeamsAdapter } from "./game-adapters/airline-trivia-teams.adapter";
 import { CabinCardClashAdapter } from "./game-adapters/cabin-card-clash.adapter";
 import { BaggageSortShowdownAdapter } from "./game-adapters/baggage-sort-showdown.adapter";
+import { CrewCoordinationAdapter } from "./game-adapters/crew-coordination.adapter";
 import { MiniGomokuAdapter } from "./game-adapters/mini-gomoku.adapter";
 import { MemoryMatchDuelAdapter } from "./game-adapters/memory-match-duel.adapter";
 import { PuzzleRaceGridAdapter } from "./game-adapters/puzzle-race-grid.adapter";
@@ -28,6 +29,7 @@ import { PlatformMetricsService } from "./platform-metrics.service";
 import { StateStoreCabinCardClashStateRepository } from "./repositories/cabin-card-clash-state.repository";
 import { StateStoreBaggageSortShowdownStateRepository } from "./repositories/baggage-sort-showdown-state.repository";
 import { StateStoreAirlineTriviaTeamsStateRepository } from "./repositories/airline-trivia-teams-state.repository";
+import { StateStoreCrewCoordinationStateRepository } from "./repositories/crew-coordination-state.repository";
 import { InMemoryJsonStateStore } from "./repositories/json-state-store";
 import { StateStoreMiniGomokuStateRepository } from "./repositories/mini-gomoku-state.repository";
 import { StateStoreMemoryMatchDuelStateRepository } from "./repositories/memory-match-duel-state.repository";
@@ -338,6 +340,9 @@ async function createRealtimeFixture(
     ),
     new BaggageSortShowdownAdapter(
       new StateStoreBaggageSortShowdownStateRepository(stateStore)
+    ),
+    new CrewCoordinationAdapter(
+      new StateStoreCrewCoordinationStateRepository(stateStore)
     ),
     new MiniGomokuAdapter(new StateStoreMiniGomokuStateRepository(stateStore)),
     new MemoryMatchDuelAdapter(

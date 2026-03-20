@@ -16,6 +16,7 @@ import {
 import { AirlineTriviaTeamsAdapter } from "./game-adapters/airline-trivia-teams.adapter";
 import { CabinCardClashAdapter } from "./game-adapters/cabin-card-clash.adapter";
 import { BaggageSortShowdownAdapter } from "./game-adapters/baggage-sort-showdown.adapter";
+import { CrewCoordinationAdapter } from "./game-adapters/crew-coordination.adapter";
 import { MiniGomokuAdapter } from "./game-adapters/mini-gomoku.adapter";
 import { MemoryMatchDuelAdapter } from "./game-adapters/memory-match-duel.adapter";
 import { PuzzleRaceGridAdapter } from "./game-adapters/puzzle-race-grid.adapter";
@@ -47,6 +48,8 @@ export class GameRuntimeService implements OnModuleDestroy {
     cabinCardClashAdapter: CabinCardClashAdapter,
     @Inject(BaggageSortShowdownAdapter)
     baggageSortShowdownAdapter: BaggageSortShowdownAdapter,
+    @Inject(CrewCoordinationAdapter)
+    crewCoordinationAdapter: CrewCoordinationAdapter,
     @Inject(MiniGomokuAdapter)
     miniGomokuAdapter: MiniGomokuAdapter,
     @Inject(MemoryMatchDuelAdapter)
@@ -74,6 +77,7 @@ export class GameRuntimeService implements OnModuleDestroy {
       airlineTriviaTeamsAdapter,
       cabinCardClashAdapter,
       baggageSortShowdownAdapter,
+      crewCoordinationAdapter,
       miniGomokuAdapter,
       memoryMatchDuelAdapter,
       puzzleRaceGridAdapter,

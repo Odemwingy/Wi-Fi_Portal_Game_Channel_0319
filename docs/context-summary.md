@@ -16,8 +16,8 @@
 
 截至当前基线：
 
-- 已落地游戏数：`24 / 25`
-- 已落地联机游戏：`14`
+- 已落地游戏数：`25 / 25`
+- 已落地联机游戏：`15`
 - 已落地单机游戏：`10`
 - GitHub open issues：仅剩 `#1` `#2` `#3` `#4` `#5` 五个 epic
 - GitHub Project：feature / task 基本已收敛为 `Done`
@@ -38,6 +38,7 @@
 - `route-builder-duel`
 - `puzzle-race-grid`
 - `skyline-defense-lite`
+- `crew-coordination`
 
 已落地的单机游戏：
 
@@ -128,6 +129,4 @@
 
 优先顺序建议：
 
-1. `crew-coordination`
-
-完成以上 1 个后，再回到 5 个 epic 做最终验收收口与关闭判断。
+1. 对照 GitHub 上 5 个 epic 收口关闭条件，并做最终验收同步

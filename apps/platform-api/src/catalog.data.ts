@@ -612,6 +612,31 @@ const packageMetadata = [
       emitsStructuredLogs: true,
       supportsTraceContext: true
     }
+  }),
+  gamePackageMetadataSchema.parse({
+    id: "crew-coordination",
+    name: "Crew Coordination",
+    version: "1.0.0",
+    frontend: {
+      route: "/games/crew-coordination",
+      assetsPath: "/opt/games/crew-coordination/frontend"
+    },
+    server: {
+      image: "registry.local/crew-coordination-server:1.0.0",
+      port: 8112
+    },
+    realtime: {
+      protocol: "websocket"
+    },
+    dependencies: ["redis"],
+    capabilities: ["multiplayer", "leaderboard", "invite-code", "points-reporting"],
+    healthcheck: {
+      path: "/health"
+    },
+    observability: {
+      emitsStructuredLogs: true,
+      supportsTraceContext: true
+    }
   })
 ];
 
@@ -768,6 +793,7 @@ function getBaseCategories(gameId: string) {
     case "seat-upgrade-shuffle":
       return ["Single Player", "Puzzle", "Featured"];
     case "skyline-defense-lite":
+    case "crew-coordination":
       return ["Multiplayer", "Strategy", "Featured"];
     default:
       return ["Single Player", "Puzzle", "Relaxed"];
@@ -822,6 +848,8 @@ function getBaseDescription(gameId: string) {
       return "Solo seat-reassignment puzzles where passengers are swapped back into their preferred cabin upgrades with minimal moves.";
     case "skyline-defense-lite":
       return "Low-frequency tower-defense duels where players deploy the right skyline module to the right district and fight for sector control.";
+    case "crew-coordination":
+      return "Coordinate cockpit, cabin, and galley relay tasks with 2-4 players to push the mission score over the target.";
     default:
       return "Single-player puzzle loops optimized for short sessions.";
   }

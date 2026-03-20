@@ -24,6 +24,7 @@ import { ChannelContentService } from "./channel-content.service";
 import { AirlineTriviaTeamsAdapter } from "./game-adapters/airline-trivia-teams.adapter";
 import { CabinCardClashAdapter } from "./game-adapters/cabin-card-clash.adapter";
 import { BaggageSortShowdownAdapter } from "./game-adapters/baggage-sort-showdown.adapter";
+import { CrewCoordinationAdapter } from "./game-adapters/crew-coordination.adapter";
 import { MiniGomokuAdapter } from "./game-adapters/mini-gomoku.adapter";
 import { MemoryMatchDuelAdapter } from "./game-adapters/memory-match-duel.adapter";
 import { PuzzleRaceGridAdapter } from "./game-adapters/puzzle-race-grid.adapter";
@@ -93,6 +94,10 @@ import {
   ChannelContentRepository,
   StateStoreChannelContentRepository
 } from "./repositories/channel-content.repository";
+import {
+  CrewCoordinationStateRepository,
+  StateStoreCrewCoordinationStateRepository
+} from "./repositories/crew-coordination-state.repository";
 import {
   InMemoryJsonStateStore,
   JsonStateStore,
@@ -191,6 +196,7 @@ import { TraceMiddleware } from "./trace.middleware";
     AirlineTriviaTeamsAdapter,
     CabinCardClashAdapter,
     BaggageSortShowdownAdapter,
+    CrewCoordinationAdapter,
     MiniGomokuAdapter,
     MemoryMatchDuelAdapter,
     PuzzleRaceGridAdapter,
@@ -239,6 +245,10 @@ import { TraceMiddleware } from "./trace.middleware";
     {
       provide: ChannelContentRepository,
       useClass: StateStoreChannelContentRepository
+    },
+    {
+      provide: CrewCoordinationStateRepository,
+      useClass: StateStoreCrewCoordinationStateRepository
     },
     {
       provide: RoomRepository,
