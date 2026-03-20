@@ -362,6 +362,31 @@ const packageMetadata = [
       emitsStructuredLogs: true,
       supportsTraceContext: true
     }
+  }),
+  gamePackageMetadataSchema.parse({
+    id: "meal-cart-match",
+    name: "Meal Cart Match",
+    version: "1.0.0",
+    frontend: {
+      route: "/games/meal-cart-match",
+      assetsPath: "/opt/games/meal-cart-match/frontend"
+    },
+    server: {
+      image: "registry.local/meal-cart-match-server:1.0.0",
+      port: 8102
+    },
+    realtime: {
+      protocol: "sse"
+    },
+    dependencies: [],
+    capabilities: ["single-player", "points-reporting"],
+    healthcheck: {
+      path: "/health"
+    },
+    observability: {
+      emitsStructuredLogs: true,
+      supportsTraceContext: true
+    }
   })
 ];
 
@@ -499,6 +524,8 @@ function getBaseCategories(gameId: string) {
       return ["Single Player", "Reaction", "Featured"];
     case "luggage-logic":
       return ["Single Player", "Puzzle", "Featured"];
+    case "meal-cart-match":
+      return ["Single Player", "Memory", "Featured"];
     default:
       return ["Single Player", "Puzzle", "Relaxed"];
   }
@@ -532,6 +559,8 @@ function getBaseDescription(gameId: string) {
       return "Short reaction rounds for passengers who want a quick solo score chase.";
     case "luggage-logic":
       return "Single-player baggage sorting loops designed for quick cabin sessions.";
+    case "meal-cart-match":
+      return "Single-player pair matching loops built around meal-cart memory and catering cues.";
     default:
       return "Single-player puzzle loops optimized for short sessions.";
   }

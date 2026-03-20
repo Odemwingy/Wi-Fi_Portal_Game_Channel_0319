@@ -7,12 +7,13 @@
 - PRD 要求总计 `25` 款游戏，其中 `15` 款支持单机 + 联机对战，`10` 款为单机游戏。
 - 技术架构采用统一 `Game Channel + Game Platform + Game Packages`，联机仅考虑机上局域网内对战。
 - 首发目标不是一次性交付 25 款，而是先用 `2-5` 款代表性游戏跑通频道、启动器、房间、实时协议、积分与权益闭环。
-- 当前代码基线里已经有十四款验证游戏：
+- 当前代码基线里已经有十五款验证游戏：
   - `quiz-duel`：双人答题对战，已接入房间、WS、积分、独立 package 页面。
   - `airline-trivia-teams`：2-4 人团队问答，已接入房间、WS、团队计分和独立 package 页面。
   - `tap-beat-battle`：双人视觉节奏对拍，已接入房间、WS、低频同步回合和独立 package 页面。
   - `cabin-puzzle`：单机拼图，已接入启动器与独立 package 页面。
   - `luggage-logic`：单机箱包排序，已接入启动器、积分和独立 package 页面。
+  - `meal-cart-match`：单机配对消除，已接入启动器、积分和独立 package 页面。
   - `word-rally`：双人词汇回合对战，已接入房间、WS、积分与独立 package 页面。
   - `memory-match-duel`：双人翻牌配对，已接入房间、WS、积分与独立 package 页面。
   - `mini-gomoku`：双人轻量五子棋，已接入房间、WS、胜负判定与独立 package 页面。
@@ -72,7 +73,7 @@
 | `runway-rush` | Runway Rush | 反应闪避 | S | P1 | Wave A | 已实现 | 易做短局和时长积分 |
 | `seat-upgrade-shuffle` | Seat Upgrade Shuffle | 排列益智 | S | P1 | Wave A | 规划中 | 点击拖拽即可完成交互 |
 | `luggage-logic` | Luggage Logic | 箱包排序 | S | P1 | Wave B | 已实现 | 适合低端终端 |
-| `meal-cart-match` | Meal Cart Match | 三消/配对 | M | P1 | Wave B | 规划中 | 资源与动画控制要克制 |
+| `meal-cart-match` | Meal Cart Match | 三消/配对 | M | P1 | Wave B | 已实现 | 资源与动画控制要克制 |
 | `window-view-memory` | Window View Memory | 记忆训练 | S | P2 | Wave B | 规划中 | 可与联机翻牌共享题库/素材 |
 | `flight-path-puzzler` | Flight Path Puzzler | 路径规划 | M | P2 | Wave B | 规划中 | 适合分关卡内容运营 |
 | `quiet-cabin-sudoku` | Quiet Cabin Sudoku | 数独轻量版 | M | P2 | Wave C | 规划中 | 偏长尾内容，适合补齐品类 |
@@ -194,6 +195,6 @@
 
 ## 8. 下一步执行建议
 
-1. `spot-the-difference-race`、`mini-gomoku`、`seat-map-strategy`、`signal-scramble`、`baggage-sort-showdown`、`cabin-card-clash`、`airline-trivia-teams`、`tap-beat-battle` 和 `luggage-logic` 已经落地，下一步优先转向下一个 Wave B 单机补位游戏 `meal-cart-match`。
+1. `spot-the-difference-race`、`mini-gomoku`、`seat-map-strategy`、`signal-scramble`、`baggage-sort-showdown`、`cabin-card-clash`、`airline-trivia-teams`、`tap-beat-battle`、`luggage-logic` 和 `meal-cart-match` 已经落地，下一步优先转向下一个 Wave B 单机补位游戏 `window-view-memory`。
 2. 在后台配置能力落地前，先用静态 catalog 驱动首发内容，避免卡住 package 接入节奏。
 3. 所有新游戏必须先过 `single-player` 或 `multiplayer` 接入模板，不允许临时特判。
