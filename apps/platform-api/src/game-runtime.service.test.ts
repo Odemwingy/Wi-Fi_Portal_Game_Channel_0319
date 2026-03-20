@@ -6,6 +6,7 @@ import { MiniGomokuAdapter } from "./game-adapters/mini-gomoku.adapter";
 import { MemoryMatchDuelAdapter } from "./game-adapters/memory-match-duel.adapter";
 import { QuizDuelAdapter } from "./game-adapters/quiz-duel.adapter";
 import { SeatMapStrategyAdapter } from "./game-adapters/seat-map-strategy.adapter";
+import { SignalScrambleAdapter } from "./game-adapters/signal-scramble.adapter";
 import { SpotTheDifferenceRaceAdapter } from "./game-adapters/spot-the-difference-race.adapter";
 import { WordRallyAdapter } from "./game-adapters/word-rally.adapter";
 import { GameRuntimeService } from "./game-runtime.service";
@@ -15,6 +16,7 @@ import { StateStoreMemoryMatchDuelStateRepository } from "./repositories/memory-
 import { StateStoreQuizDuelStateRepository } from "./repositories/quiz-duel-state.repository";
 import { StateStoreRoomRepository } from "./repositories/room.repository";
 import { StateStoreSeatMapStrategyStateRepository } from "./repositories/seat-map-strategy-state.repository";
+import { StateStoreSignalScrambleStateRepository } from "./repositories/signal-scramble-state.repository";
 import { StateStoreSpotTheDifferenceRaceStateRepository } from "./repositories/spot-the-difference-race-state.repository";
 import { StateStoreWordRallyStateRepository } from "./repositories/word-rally-state.repository";
 import { RoomService } from "./room.service";
@@ -29,6 +31,9 @@ function createRuntime(stateStore: InMemoryJsonStateStore, roomService: RoomServ
     new QuizDuelAdapter(new StateStoreQuizDuelStateRepository(stateStore)),
     new SeatMapStrategyAdapter(
       new StateStoreSeatMapStrategyStateRepository(stateStore)
+    ),
+    new SignalScrambleAdapter(
+      new StateStoreSignalScrambleStateRepository(stateStore)
     ),
     new SpotTheDifferenceRaceAdapter(
       new StateStoreSpotTheDifferenceRaceStateRepository(stateStore)
@@ -524,6 +529,113 @@ describe("GameRuntimeService", () => {
       playerId: "player-2",
       pointsAwarded: 2,
       seatId: "1B"
+    });
+
+    runtime.onModuleDestroy();
+  });
+
+  it("supports signal-scramble rooms with asynchronous progress racing", async () => {
+    const stateStore = new InMemoryJsonStateStore();
+    const roomService = new RoomService(new StateStoreRoomRepository(stateStore));
+    const runtime = createRuntime(stateStore, roomService);
+    const trace = startTrace();
+
+    const created = await roomService.createRoom(trace, {
+      game_id: "signal-scramble",
+      host_player_id: "host-1",
+      host_session_id: "sess-host-1",
+      max_players: 2,
+      room_name: "Signal Scramble Room"
+    });
+
+    await roomService.joinRoom(trace, {
+      player_id: "player-2",
+      room_id: created.room.room_id,
+      session_id: "sess-player-2"
+    });
+
+    const initialSnapshot = await runtime.getGameSnapshot(
+      trace,
+      "signal-scramble",
+      created.room.room_id
+    );
+
+    expect(initialSnapshot?.state.target_sequence).toEqual([
+      "relay-b2",
+      "relay-c3",
+      "relay-e5",
+      "relay-f6"
+    ]);
+
+    await runtime.handleGameEvent(trace, {
+      gameId: "signal-scramble",
+      payload: {
+        nodeId: "relay-a1"
+      },
+      playerId: "player-2",
+      roomId: created.room.room_id,
+      seq: 1,
+      type: "game_event"
+    });
+
+    const firstAccepted = await runtime.handleGameEvent(trace, {
+      gameId: "signal-scramble",
+      payload: {
+        nodeId: "relay-b2"
+      },
+      playerId: "host-1",
+      roomId: created.room.room_id,
+      seq: 1,
+      type: "game_event"
+    });
+
+    expect(firstAccepted?.state.progress_by_player).toEqual({
+      "host-1": 1,
+      "player-2": 0
+    });
+    expect(firstAccepted?.state.last_activation).toMatchObject({
+      nodeId: "relay-b2",
+      playerId: "host-1",
+      status: "accepted"
+    });
+
+    await runtime.handleGameEvent(trace, {
+      gameId: "signal-scramble",
+      payload: {
+        nodeId: "relay-c3"
+      },
+      playerId: "host-1",
+      roomId: created.room.room_id,
+      seq: 2,
+      type: "game_event"
+    });
+    await runtime.handleGameEvent(trace, {
+      gameId: "signal-scramble",
+      payload: {
+        nodeId: "relay-e5"
+      },
+      playerId: "host-1",
+      roomId: created.room.room_id,
+      seq: 3,
+      type: "game_event"
+    });
+
+    const finalSnapshot = await runtime.handleGameEvent(trace, {
+      gameId: "signal-scramble",
+      payload: {
+        nodeId: "relay-f6"
+      },
+      playerId: "host-1",
+      roomId: created.room.room_id,
+      seq: 4,
+      type: "game_event"
+    });
+
+    expect(finalSnapshot?.state.is_completed).toBe(true);
+    expect(finalSnapshot?.state.winner_player_ids).toEqual(["host-1"]);
+    expect(finalSnapshot?.state.scores).toEqual({
+      "host-1": 14,
+      "player-2": 0
     });
 
     runtime.onModuleDestroy();

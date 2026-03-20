@@ -11,6 +11,7 @@ import { PortalHostPage } from "./PortalHostPage";
 import { QuizDuelPackagePage } from "./QuizDuelPackagePage";
 import { RunwayRushPackagePage } from "./RunwayRushPackagePage";
 import { SeatMapStrategyPackagePage } from "./SeatMapStrategyPackagePage";
+import { SignalScramblePackagePage } from "./SignalScramblePackagePage";
 import { SpotTheDifferenceRacePackagePage } from "./SpotTheDifferenceRacePackagePage";
 import { WordRallyPackagePage } from "./WordRallyPackagePage";
 import "./styles.css";
@@ -31,6 +32,8 @@ const RootComponent =
         ? MiniGomokuPackagePage
       : pathname === "/games/seat-map-strategy"
         ? SeatMapStrategyPackagePage
+      : pathname === "/games/signal-scramble"
+        ? SignalScramblePackagePage
       : pathname === "/games/memory-match-duel"
         ? MemoryMatchDuelPackagePage
       : pathname === "/games/spot-the-difference-race"

@@ -25,6 +25,7 @@ import { MiniGomokuAdapter } from "./game-adapters/mini-gomoku.adapter";
 import { MemoryMatchDuelAdapter } from "./game-adapters/memory-match-duel.adapter";
 import { QuizDuelAdapter } from "./game-adapters/quiz-duel.adapter";
 import { SeatMapStrategyAdapter } from "./game-adapters/seat-map-strategy.adapter";
+import { SignalScrambleAdapter } from "./game-adapters/signal-scramble.adapter";
 import { SpotTheDifferenceRaceAdapter } from "./game-adapters/spot-the-difference-race.adapter";
 import { WordRallyAdapter } from "./game-adapters/word-rally.adapter";
 import { GameRuntimeService } from "./game-runtime.service";
@@ -107,6 +108,10 @@ import {
   StateStoreSeatMapStrategyStateRepository
 } from "./repositories/seat-map-strategy-state.repository";
 import {
+  SignalScrambleStateRepository,
+  StateStoreSignalScrambleStateRepository
+} from "./repositories/signal-scramble-state.repository";
+import {
   SpotTheDifferenceRaceStateRepository,
   StateStoreSpotTheDifferenceRaceStateRepository
 } from "./repositories/spot-the-difference-race-state.repository";
@@ -152,6 +157,7 @@ import { TraceMiddleware } from "./trace.middleware";
     MemoryMatchDuelAdapter,
     QuizDuelAdapter,
     SeatMapStrategyAdapter,
+    SignalScrambleAdapter,
     SpotTheDifferenceRaceAdapter,
     WordRallyAdapter,
     TraceMiddleware,
@@ -207,6 +213,10 @@ import { TraceMiddleware } from "./trace.middleware";
     {
       provide: SeatMapStrategyStateRepository,
       useClass: StateStoreSeatMapStrategyStateRepository
+    },
+    {
+      provide: SignalScrambleStateRepository,
+      useClass: StateStoreSignalScrambleStateRepository
     },
     {
       provide: MemoryMatchDuelStateRepository,
