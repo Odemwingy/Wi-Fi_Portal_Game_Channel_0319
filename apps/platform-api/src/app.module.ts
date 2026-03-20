@@ -30,6 +30,7 @@ import { PuzzleRaceGridAdapter } from "./game-adapters/puzzle-race-grid.adapter"
 import { QuizDuelAdapter } from "./game-adapters/quiz-duel.adapter";
 import { RouteBuilderDuelAdapter } from "./game-adapters/route-builder-duel.adapter";
 import { SeatMapStrategyAdapter } from "./game-adapters/seat-map-strategy.adapter";
+import { SkylineDefenseLiteAdapter } from "./game-adapters/skyline-defense-lite.adapter";
 import { SignalScrambleAdapter } from "./game-adapters/signal-scramble.adapter";
 import { SpotTheDifferenceRaceAdapter } from "./game-adapters/spot-the-difference-race.adapter";
 import { TapBeatBattleAdapter } from "./game-adapters/tap-beat-battle.adapter";
@@ -105,6 +106,10 @@ import {
   PuzzleRaceGridStateRepository,
   StateStorePuzzleRaceGridStateRepository
 } from "./repositories/puzzle-race-grid-state.repository";
+import {
+  SkylineDefenseLiteStateRepository,
+  StateStoreSkylineDefenseLiteStateRepository
+} from "./repositories/skyline-defense-lite-state.repository";
 import {
   RouteBuilderDuelStateRepository,
   StateStoreRouteBuilderDuelStateRepository
@@ -192,6 +197,7 @@ import { TraceMiddleware } from "./trace.middleware";
     QuizDuelAdapter,
     RouteBuilderDuelAdapter,
     SeatMapStrategyAdapter,
+    SkylineDefenseLiteAdapter,
     SignalScrambleAdapter,
     SpotTheDifferenceRaceAdapter,
     TapBeatBattleAdapter,
@@ -277,6 +283,10 @@ import { TraceMiddleware } from "./trace.middleware";
     {
       provide: PuzzleRaceGridStateRepository,
       useClass: StateStorePuzzleRaceGridStateRepository
+    },
+    {
+      provide: SkylineDefenseLiteStateRepository,
+      useClass: StateStoreSkylineDefenseLiteStateRepository
     },
     {
       provide: SpotTheDifferenceRaceStateRepository,

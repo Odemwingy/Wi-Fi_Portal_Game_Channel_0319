@@ -22,6 +22,7 @@ import { PuzzleRaceGridAdapter } from "./game-adapters/puzzle-race-grid.adapter"
 import { QuizDuelAdapter } from "./game-adapters/quiz-duel.adapter";
 import { RouteBuilderDuelAdapter } from "./game-adapters/route-builder-duel.adapter";
 import { SeatMapStrategyAdapter } from "./game-adapters/seat-map-strategy.adapter";
+import { SkylineDefenseLiteAdapter } from "./game-adapters/skyline-defense-lite.adapter";
 import { SignalScrambleAdapter } from "./game-adapters/signal-scramble.adapter";
 import { SpotTheDifferenceRaceAdapter } from "./game-adapters/spot-the-difference-race.adapter";
 import { TapBeatBattleAdapter } from "./game-adapters/tap-beat-battle.adapter";
@@ -58,6 +59,8 @@ export class GameRuntimeService implements OnModuleDestroy {
     routeBuilderDuelAdapter: RouteBuilderDuelAdapter,
     @Inject(SeatMapStrategyAdapter)
     seatMapStrategyAdapter: SeatMapStrategyAdapter,
+    @Inject(SkylineDefenseLiteAdapter)
+    skylineDefenseLiteAdapter: SkylineDefenseLiteAdapter,
     @Inject(SignalScrambleAdapter)
     signalScrambleAdapter: SignalScrambleAdapter,
     @Inject(SpotTheDifferenceRaceAdapter)
@@ -77,6 +80,7 @@ export class GameRuntimeService implements OnModuleDestroy {
       quizDuelAdapter,
       routeBuilderDuelAdapter,
       seatMapStrategyAdapter,
+      skylineDefenseLiteAdapter,
       signalScrambleAdapter,
       spotTheDifferenceRaceAdapter,
       tapBeatBattleAdapter,

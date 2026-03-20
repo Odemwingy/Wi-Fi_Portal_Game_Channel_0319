@@ -22,6 +22,7 @@ import { RunwayRushPackagePage } from "./RunwayRushPackagePage";
 import { RouteBuilderDuelPackagePage } from "./RouteBuilderDuelPackagePage";
 import { SeatUpgradeShufflePackagePage } from "./SeatUpgradeShufflePackagePage";
 import { SeatMapStrategyPackagePage } from "./SeatMapStrategyPackagePage";
+import { SkylineDefenseLitePackagePage } from "./SkylineDefenseLitePackagePage";
 import { SignalScramblePackagePage } from "./SignalScramblePackagePage";
 import { SpotTheDifferenceRacePackagePage } from "./SpotTheDifferenceRacePackagePage";
 import { StarMapRelaxPackagePage } from "./StarMapRelaxPackagePage";
@@ -46,6 +47,8 @@ const RootComponent =
         ? PuzzleRaceGridPackagePage
       : pathname === "/games/seat-upgrade-shuffle"
         ? SeatUpgradeShufflePackagePage
+      : pathname === "/games/skyline-defense-lite"
+        ? SkylineDefenseLitePackagePage
       : pathname === "/games/route-builder-duel"
         ? RouteBuilderDuelPackagePage
       : pathname === "/games/airline-trivia-teams"

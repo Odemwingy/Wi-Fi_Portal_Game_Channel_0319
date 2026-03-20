@@ -18,6 +18,7 @@ import { PuzzleRaceGridAdapter } from "./game-adapters/puzzle-race-grid.adapter"
 import { QuizDuelAdapter } from "./game-adapters/quiz-duel.adapter";
 import { RouteBuilderDuelAdapter } from "./game-adapters/route-builder-duel.adapter";
 import { SeatMapStrategyAdapter } from "./game-adapters/seat-map-strategy.adapter";
+import { SkylineDefenseLiteAdapter } from "./game-adapters/skyline-defense-lite.adapter";
 import { SignalScrambleAdapter } from "./game-adapters/signal-scramble.adapter";
 import { SpotTheDifferenceRaceAdapter } from "./game-adapters/spot-the-difference-race.adapter";
 import { TapBeatBattleAdapter } from "./game-adapters/tap-beat-battle.adapter";
@@ -35,6 +36,7 @@ import { StateStoreQuizDuelStateRepository } from "./repositories/quiz-duel-stat
 import { StateStoreRouteBuilderDuelStateRepository } from "./repositories/route-builder-duel-state.repository";
 import { StateStoreRoomRepository } from "./repositories/room.repository";
 import { StateStoreSeatMapStrategyStateRepository } from "./repositories/seat-map-strategy-state.repository";
+import { StateStoreSkylineDefenseLiteStateRepository } from "./repositories/skyline-defense-lite-state.repository";
 import { StateStoreSignalScrambleStateRepository } from "./repositories/signal-scramble-state.repository";
 import { StateStoreSpotTheDifferenceRaceStateRepository } from "./repositories/spot-the-difference-race-state.repository";
 import { StateStoreTapBeatBattleStateRepository } from "./repositories/tap-beat-battle-state.repository";
@@ -318,6 +320,7 @@ async function createRealtimeFixture(
       | "quiz-duel"
       | "route-builder-duel"
       | "seat-map-strategy"
+      | "skyline-defense-lite"
       | "signal-scramble"
       | "spot-the-difference-race"
       | "word-rally";
@@ -349,6 +352,9 @@ async function createRealtimeFixture(
     ),
     new SeatMapStrategyAdapter(
       new StateStoreSeatMapStrategyStateRepository(stateStore)
+    ),
+    new SkylineDefenseLiteAdapter(
+      new StateStoreSkylineDefenseLiteStateRepository(stateStore)
     ),
     new SignalScrambleAdapter(
       new StateStoreSignalScrambleStateRepository(stateStore)

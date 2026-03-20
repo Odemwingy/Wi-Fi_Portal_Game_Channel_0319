@@ -7,7 +7,7 @@
 - PRD 要求总计 `25` 款游戏，其中 `15` 款支持单机 + 联机对战，`10` 款为单机游戏。
 - 技术架构采用统一 `Game Channel + Game Platform + Game Packages`，联机仅考虑机上局域网内对战。
 - 首发目标不是一次性交付 25 款，而是先用 `2-5` 款代表性游戏跑通频道、启动器、房间、实时协议、积分与权益闭环。
-- 当前代码基线里已经有二十三款验证游戏：
+- 当前代码基线里已经有二十四款验证游戏：
   - `quiz-duel`：双人答题对战，已接入房间、WS、积分、独立 package 页面。
   - `airline-trivia-teams`：2-4 人团队问答，已接入房间、WS、团队计分和独立 package 页面。
   - `tap-beat-battle`：双人视觉节奏对拍，已接入房间、WS、低频同步回合和独立 package 页面。
@@ -31,6 +31,7 @@
   - `cabin-card-clash`：双人轻量卡牌对战，已接入房间、WS、回合结算与独立 package 页面。
   - `runway-rush`：单机反应挑战，已接入启动器、积分与独立 package 页面。
   - `seat-upgrade-shuffle`：单机座位重排益智，已接入启动器、积分与独立 package 页面。
+  - `skyline-defense-lite`：双人轻塔防部署，已接入房间、WS、积分与独立 package 页面。
 
 ## 2. 选型原则
 
@@ -70,7 +71,7 @@
 | `tap-beat-battle` | Tap Beat Battle | 节奏对拍 | 双人低频同步 | M | P2 | Wave B | 已实现 | 采用视觉节奏提示，避免强音频依赖 |
 | `route-builder-duel` | Route Builder Duel | 路线规划 | 双人 turn-based | M | P2 | Wave C | 已实现 | 偏策略，适合高复玩 |
 | `puzzle-race-grid` | Puzzle Race Grid | 网格消除竞速 | 双人状态对比 | L | P2 | Wave C | 已实现 | 玩法成熟，但同步与动画更复杂 |
-| `skyline-defense-lite` | Skyline Defense Lite | 轻塔防对战 | 双人回合部署 | L | P2 | Wave C | 规划中 | 必须避免重实时塔防 |
+| `skyline-defense-lite` | Skyline Defense Lite | 轻塔防对战 | 双人回合部署 | L | P2 | Wave C | 已实现 | 必须避免重实时塔防 |
 | `crew-coordination` | Crew Coordination | 多人协作解谜 | 2-4 人 turn-based | L | P3 | Wave C | 规划中 | 放在最后验证多人协作体验 |
 
 ### 3.2 单机候选（10 款）
@@ -203,6 +204,6 @@
 
 ## 8. 下一步执行建议
 
-1. `spot-the-difference-race`、`mini-gomoku`、`seat-map-strategy`、`signal-scramble`、`baggage-sort-showdown`、`cabin-card-clash`、`airline-trivia-teams`、`tap-beat-battle`、`luggage-logic`、`meal-cart-match`、`window-view-memory`、`flight-path-puzzler`、`quiet-cabin-sudoku`、`star-map-relax`、`aircraft-fix-kit`、`route-builder-duel`、`puzzle-race-grid` 和 `seat-upgrade-shuffle` 已经落地，下一步优先转向 `skyline-defense-lite`。
+1. `spot-the-difference-race`、`mini-gomoku`、`seat-map-strategy`、`signal-scramble`、`baggage-sort-showdown`、`cabin-card-clash`、`airline-trivia-teams`、`tap-beat-battle`、`luggage-logic`、`meal-cart-match`、`window-view-memory`、`flight-path-puzzler`、`quiet-cabin-sudoku`、`star-map-relax`、`aircraft-fix-kit`、`route-builder-duel`、`puzzle-race-grid`、`seat-upgrade-shuffle` 和 `skyline-defense-lite` 已经落地，下一步优先转向 `crew-coordination`。
 2. 在后台配置能力落地前，先用静态 catalog 驱动首发内容，避免卡住 package 接入节奏。
 3. 所有新游戏必须先过 `single-player` 或 `multiplayer` 接入模板，不允许临时特判。

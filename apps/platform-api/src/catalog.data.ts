@@ -587,6 +587,31 @@ const packageMetadata = [
       emitsStructuredLogs: true,
       supportsTraceContext: true
     }
+  }),
+  gamePackageMetadataSchema.parse({
+    id: "skyline-defense-lite",
+    name: "Skyline Defense Lite",
+    version: "1.0.0",
+    frontend: {
+      route: "/games/skyline-defense-lite",
+      assetsPath: "/opt/games/skyline-defense-lite/frontend"
+    },
+    server: {
+      image: "registry.local/skyline-defense-lite-server:1.0.0",
+      port: 8111
+    },
+    realtime: {
+      protocol: "websocket"
+    },
+    dependencies: ["redis"],
+    capabilities: ["multiplayer", "points-reporting"],
+    healthcheck: {
+      path: "/health"
+    },
+    observability: {
+      emitsStructuredLogs: true,
+      supportsTraceContext: true
+    }
   })
 ];
 
@@ -742,6 +767,8 @@ function getBaseCategories(gameId: string) {
       return ["Multiplayer", "Puzzle", "Featured"];
     case "seat-upgrade-shuffle":
       return ["Single Player", "Puzzle", "Featured"];
+    case "skyline-defense-lite":
+      return ["Multiplayer", "Strategy", "Featured"];
     default:
       return ["Single Player", "Puzzle", "Relaxed"];
   }
@@ -793,6 +820,8 @@ function getBaseDescription(gameId: string) {
       return "Asynchronous shared-grid racing where players clear the right cells in order to finish first.";
     case "seat-upgrade-shuffle":
       return "Solo seat-reassignment puzzles where passengers are swapped back into their preferred cabin upgrades with minimal moves.";
+    case "skyline-defense-lite":
+      return "Low-frequency tower-defense duels where players deploy the right skyline module to the right district and fight for sector control.";
     default:
       return "Single-player puzzle loops optimized for short sessions.";
   }

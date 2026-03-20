@@ -4,7 +4,7 @@
 
 - 日期：`2026-03-20`
 - 当前分支：`main`
-- 当前基线：`23 / 25` 款游戏已实现
+- 当前基线：`24 / 25` 款游戏已实现
 - GitHub Project： [Wi-Fi Portal Game Channel Roadmap](https://github.com/users/Odemwingy/projects/2)
 - 当前 open issues：`#1` `#2` `#3` `#4` `#5`
 
@@ -29,11 +29,12 @@
 - Wave A 已完成
 - Wave B 已完成主要扩充
 - Wave C 已完成部分长尾与策略游戏
-- 新增 `puzzle-race-grid` 联机竞速拼图和 `seat-upgrade-shuffle` 单机座位重排益智
+- 新增 `puzzle-race-grid` 联机竞速拼图、`seat-upgrade-shuffle` 单机座位重排益智和 `skyline-defense-lite` 联机轻塔防对战
 
 ## 最近提交
 
 - `a69fe7d` Add route-builder-duel multiplayer package
+- `2a801d4` Add seat-upgrade-shuffle package
 - `442f9cd` Add puzzle-race-grid package
 - `1f9ad51` Add aircraft-fix-kit single-player package
 - `832b2d2` Add star-map-relax single-player package
@@ -55,7 +56,6 @@
 
 ## 待继续推进
 
-- `skyline-defense-lite`
 - `crew-coordination`
 
 ## 备注
