@@ -5,6 +5,7 @@ import { startTrace } from "@wifi-portal/shared-observability";
 import { MiniGomokuAdapter } from "./game-adapters/mini-gomoku.adapter";
 import { MemoryMatchDuelAdapter } from "./game-adapters/memory-match-duel.adapter";
 import { QuizDuelAdapter } from "./game-adapters/quiz-duel.adapter";
+import { SeatMapStrategyAdapter } from "./game-adapters/seat-map-strategy.adapter";
 import { SpotTheDifferenceRaceAdapter } from "./game-adapters/spot-the-difference-race.adapter";
 import { WordRallyAdapter } from "./game-adapters/word-rally.adapter";
 import { GameRuntimeService } from "./game-runtime.service";
@@ -13,6 +14,7 @@ import { StateStoreMiniGomokuStateRepository } from "./repositories/mini-gomoku-
 import { StateStoreMemoryMatchDuelStateRepository } from "./repositories/memory-match-duel-state.repository";
 import { StateStoreQuizDuelStateRepository } from "./repositories/quiz-duel-state.repository";
 import { StateStoreRoomRepository } from "./repositories/room.repository";
+import { StateStoreSeatMapStrategyStateRepository } from "./repositories/seat-map-strategy-state.repository";
 import { StateStoreSpotTheDifferenceRaceStateRepository } from "./repositories/spot-the-difference-race-state.repository";
 import { StateStoreWordRallyStateRepository } from "./repositories/word-rally-state.repository";
 import { RoomService } from "./room.service";
@@ -25,6 +27,9 @@ function createRuntime(stateStore: InMemoryJsonStateStore, roomService: RoomServ
       new StateStoreMemoryMatchDuelStateRepository(stateStore)
     ),
     new QuizDuelAdapter(new StateStoreQuizDuelStateRepository(stateStore)),
+    new SeatMapStrategyAdapter(
+      new StateStoreSeatMapStrategyStateRepository(stateStore)
+    ),
     new SpotTheDifferenceRaceAdapter(
       new StateStoreSpotTheDifferenceRaceStateRepository(stateStore)
     ),
@@ -452,6 +457,74 @@ describe("GameRuntimeService", () => {
       { col: 3, row: 0 },
       { col: 4, row: 0 }
     ]);
+
+    runtime.onModuleDestroy();
+  });
+
+  it("supports seat-map-strategy rooms with turn scoring and final winner", async () => {
+    const stateStore = new InMemoryJsonStateStore();
+    const roomService = new RoomService(new StateStoreRoomRepository(stateStore));
+    const runtime = createRuntime(stateStore, roomService);
+    const trace = startTrace();
+
+    const created = await roomService.createRoom(trace, {
+      game_id: "seat-map-strategy",
+      host_player_id: "host-1",
+      host_session_id: "sess-host-1",
+      max_players: 2,
+      room_name: "Seat Map Strategy Room"
+    });
+
+    await roomService.joinRoom(trace, {
+      player_id: "player-2",
+      room_id: created.room.room_id,
+      session_id: "sess-player-2"
+    });
+
+    const initialSnapshot = await runtime.getGameSnapshot(
+      trace,
+      "seat-map-strategy",
+      created.room.room_id
+    );
+
+    expect(initialSnapshot?.state.available_seat_count).toBe(16);
+    expect(initialSnapshot?.state.player_marks).toEqual({
+      "host-1": "A",
+      "player-2": "B"
+    });
+
+    await runtime.handleGameEvent(trace, {
+      gameId: "seat-map-strategy",
+      payload: {
+        seatId: "1A"
+      },
+      playerId: "host-1",
+      roomId: created.room.room_id,
+      seq: 1,
+      type: "game_event"
+    });
+
+    const updatedSnapshot = await runtime.handleGameEvent(trace, {
+      gameId: "seat-map-strategy",
+      payload: {
+        seatId: "1B"
+      },
+      playerId: "player-2",
+      roomId: created.room.room_id,
+      seq: 1,
+      type: "game_event"
+    });
+
+    expect(updatedSnapshot?.state.available_seat_count).toBe(14);
+    expect(updatedSnapshot?.state.scores).toEqual({
+      "host-1": 3,
+      "player-2": 2
+    });
+    expect(updatedSnapshot?.state.last_move).toMatchObject({
+      playerId: "player-2",
+      pointsAwarded: 2,
+      seatId: "1B"
+    });
 
     runtime.onModuleDestroy();
   });

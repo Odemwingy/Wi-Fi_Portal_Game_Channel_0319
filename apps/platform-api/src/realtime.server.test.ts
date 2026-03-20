@@ -12,6 +12,7 @@ import { WebSocket } from "ws";
 import { MiniGomokuAdapter } from "./game-adapters/mini-gomoku.adapter";
 import { MemoryMatchDuelAdapter } from "./game-adapters/memory-match-duel.adapter";
 import { QuizDuelAdapter } from "./game-adapters/quiz-duel.adapter";
+import { SeatMapStrategyAdapter } from "./game-adapters/seat-map-strategy.adapter";
 import { SpotTheDifferenceRaceAdapter } from "./game-adapters/spot-the-difference-race.adapter";
 import { WordRallyAdapter } from "./game-adapters/word-rally.adapter";
 import { GameRuntimeService } from "./game-runtime.service";
@@ -21,6 +22,7 @@ import { StateStoreMiniGomokuStateRepository } from "./repositories/mini-gomoku-
 import { StateStoreMemoryMatchDuelStateRepository } from "./repositories/memory-match-duel-state.repository";
 import { StateStoreQuizDuelStateRepository } from "./repositories/quiz-duel-state.repository";
 import { StateStoreRoomRepository } from "./repositories/room.repository";
+import { StateStoreSeatMapStrategyStateRepository } from "./repositories/seat-map-strategy-state.repository";
 import { StateStoreSpotTheDifferenceRaceStateRepository } from "./repositories/spot-the-difference-race-state.repository";
 import { StateStoreWordRallyStateRepository } from "./repositories/word-rally-state.repository";
 import { RealtimeServer } from "./realtime.server";
@@ -299,6 +301,7 @@ async function createRealtimeFixture(
       | "memory-match-duel"
       | "mini-gomoku"
       | "quiz-duel"
+      | "seat-map-strategy"
       | "spot-the-difference-race"
       | "word-rally";
   }
@@ -312,6 +315,9 @@ async function createRealtimeFixture(
       new StateStoreMemoryMatchDuelStateRepository(stateStore)
     ),
     new QuizDuelAdapter(new StateStoreQuizDuelStateRepository(stateStore)),
+    new SeatMapStrategyAdapter(
+      new StateStoreSeatMapStrategyStateRepository(stateStore)
+    ),
     new SpotTheDifferenceRaceAdapter(
       new StateStoreSpotTheDifferenceRaceStateRepository(stateStore)
     ),

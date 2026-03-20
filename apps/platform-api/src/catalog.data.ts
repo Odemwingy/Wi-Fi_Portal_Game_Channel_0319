@@ -139,6 +139,31 @@ const packageMetadata = [
     }
   }),
   gamePackageMetadataSchema.parse({
+    id: "seat-map-strategy",
+    name: "Seat Map Strategy",
+    version: "1.0.0",
+    frontend: {
+      route: "/games/seat-map-strategy",
+      assetsPath: "/opt/games/seat-map-strategy/frontend"
+    },
+    server: {
+      image: "registry.local/seat-map-strategy-server:1.0.0",
+      port: 8095
+    },
+    realtime: {
+      protocol: "websocket"
+    },
+    dependencies: ["redis"],
+    capabilities: ["multiplayer", "leaderboard", "invite-code", "points-reporting"],
+    healthcheck: {
+      path: "/health"
+    },
+    observability: {
+      emitsStructuredLogs: true,
+      supportsTraceContext: true
+    }
+  }),
+  gamePackageMetadataSchema.parse({
     id: "spot-the-difference-race",
     name: "Spot the Difference Race",
     version: "1.0.0",
@@ -306,6 +331,8 @@ function getBaseCategories(gameId: string) {
       return ["Multiplayer", "Memory", "Featured"];
     case "mini-gomoku":
       return ["Multiplayer", "Strategy", "Board"];
+    case "seat-map-strategy":
+      return ["Multiplayer", "Strategy", "Cabin"];
     case "spot-the-difference-race":
       return ["Multiplayer", "Observation", "Featured"];
     case "runway-rush":
@@ -325,6 +352,8 @@ function getBaseDescription(gameId: string) {
       return "Turn-based memory flips with shared board state and invite-room play.";
     case "mini-gomoku":
       return "A lightweight invite-room Gomoku duel with five-in-a-row win detection.";
+    case "seat-map-strategy":
+      return "Cabin seat drafting with adjacency bonuses and turn-based score control.";
     case "spot-the-difference-race":
       return "Low-frequency spot-claim racing built for cabin invite rooms.";
     case "runway-rush":

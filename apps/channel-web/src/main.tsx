@@ -10,6 +10,7 @@ import { MiniGomokuPackagePage } from "./MiniGomokuPackagePage";
 import { PortalHostPage } from "./PortalHostPage";
 import { QuizDuelPackagePage } from "./QuizDuelPackagePage";
 import { RunwayRushPackagePage } from "./RunwayRushPackagePage";
+import { SeatMapStrategyPackagePage } from "./SeatMapStrategyPackagePage";
 import { SpotTheDifferenceRacePackagePage } from "./SpotTheDifferenceRacePackagePage";
 import { WordRallyPackagePage } from "./WordRallyPackagePage";
 import "./styles.css";
@@ -28,6 +29,8 @@ const RootComponent =
       ? CabinPuzzlePackagePage
       : pathname === "/games/mini-gomoku"
         ? MiniGomokuPackagePage
+      : pathname === "/games/seat-map-strategy"
+        ? SeatMapStrategyPackagePage
       : pathname === "/games/memory-match-duel"
         ? MemoryMatchDuelPackagePage
       : pathname === "/games/spot-the-difference-race"

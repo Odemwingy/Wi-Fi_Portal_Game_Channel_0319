@@ -16,6 +16,7 @@ import {
 import { MiniGomokuAdapter } from "./game-adapters/mini-gomoku.adapter";
 import { MemoryMatchDuelAdapter } from "./game-adapters/memory-match-duel.adapter";
 import { QuizDuelAdapter } from "./game-adapters/quiz-duel.adapter";
+import { SeatMapStrategyAdapter } from "./game-adapters/seat-map-strategy.adapter";
 import { SpotTheDifferenceRaceAdapter } from "./game-adapters/spot-the-difference-race.adapter";
 import { WordRallyAdapter } from "./game-adapters/word-rally.adapter";
 import { RoomService, type RoomSubscriptionEvent } from "./room.service";
@@ -38,6 +39,8 @@ export class GameRuntimeService implements OnModuleDestroy {
     memoryMatchDuelAdapter: MemoryMatchDuelAdapter,
     @Inject(QuizDuelAdapter)
     quizDuelAdapter: QuizDuelAdapter,
+    @Inject(SeatMapStrategyAdapter)
+    seatMapStrategyAdapter: SeatMapStrategyAdapter,
     @Inject(SpotTheDifferenceRaceAdapter)
     spotTheDifferenceRaceAdapter: SpotTheDifferenceRaceAdapter,
     @Inject(WordRallyAdapter)
@@ -47,6 +50,7 @@ export class GameRuntimeService implements OnModuleDestroy {
       miniGomokuAdapter,
       memoryMatchDuelAdapter,
       quizDuelAdapter,
+      seatMapStrategyAdapter,
       spotTheDifferenceRaceAdapter,
       wordRallyAdapter
     ] satisfies readonly GameAdapter[]);
