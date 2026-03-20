@@ -20,6 +20,7 @@ import { RunwayRushPackagePage } from "./RunwayRushPackagePage";
 import { SeatMapStrategyPackagePage } from "./SeatMapStrategyPackagePage";
 import { SignalScramblePackagePage } from "./SignalScramblePackagePage";
 import { SpotTheDifferenceRacePackagePage } from "./SpotTheDifferenceRacePackagePage";
+import { StarMapRelaxPackagePage } from "./StarMapRelaxPackagePage";
 import { TapBeatBattlePackagePage } from "./TapBeatBattlePackagePage";
 import { WindowViewMemoryPackagePage } from "./WindowViewMemoryPackagePage";
 import { WordRallyPackagePage } from "./WordRallyPackagePage";
@@ -45,8 +46,10 @@ const RootComponent =
         ? BaggageSortShowdownPackagePage
     : pathname === "/games/cabin-puzzle"
       ? CabinPuzzlePackagePage
-      : pathname === "/games/quiet-cabin-sudoku"
-        ? QuietCabinSudokuPackagePage
+    : pathname === "/games/quiet-cabin-sudoku"
+      ? QuietCabinSudokuPackagePage
+      : pathname === "/games/star-map-relax"
+        ? StarMapRelaxPackagePage
       : pathname === "/games/flight-path-puzzler"
         ? FlightPathPuzzlerPackagePage
       : pathname === "/games/luggage-logic"

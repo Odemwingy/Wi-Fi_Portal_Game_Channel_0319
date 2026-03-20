@@ -462,6 +462,31 @@ const packageMetadata = [
       emitsStructuredLogs: true,
       supportsTraceContext: true
     }
+  }),
+  gamePackageMetadataSchema.parse({
+    id: "star-map-relax",
+    name: "Star Map Relax",
+    version: "1.0.0",
+    frontend: {
+      route: "/games/star-map-relax",
+      assetsPath: "/opt/games/star-map-relax/frontend"
+    },
+    server: {
+      image: "registry.local/star-map-relax-server:1.0.0",
+      port: 8106
+    },
+    realtime: {
+      protocol: "sse"
+    },
+    dependencies: [],
+    capabilities: ["single-player", "points-reporting"],
+    healthcheck: {
+      path: "/health"
+    },
+    observability: {
+      emitsStructuredLogs: true,
+      supportsTraceContext: true
+    }
   })
 ];
 
@@ -607,6 +632,8 @@ function getBaseCategories(gameId: string) {
       return ["Single Player", "Strategy", "Relaxed"];
     case "quiet-cabin-sudoku":
       return ["Single Player", "Puzzle", "Relaxed"];
+    case "star-map-relax":
+      return ["Single Player", "Relaxed", "Featured"];
     default:
       return ["Single Player", "Puzzle", "Relaxed"];
   }
@@ -648,6 +675,8 @@ function getBaseDescription(gameId: string) {
       return "Solo route planning rounds where passengers choose the cleanest next waypoint for each cabin-friendly flight segment.";
     case "quiet-cabin-sudoku":
       return "Short solo sudoku loops built for quiet cabin play and low-distraction number filling.";
+    case "star-map-relax":
+      return "Low-pressure star tracing rounds designed for quiet night-flight relaxation and short solo sessions.";
     default:
       return "Single-player puzzle loops optimized for short sessions.";
   }
