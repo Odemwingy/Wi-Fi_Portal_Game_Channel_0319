@@ -801,6 +801,55 @@ textarea:focus {
   background: rgba(255, 255, 255, 0.96);
 }
 
+.gomoku-layout {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.9fr);
+}
+
+.gomoku-board {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem;
+  border-radius: 24px;
+  background:
+    linear-gradient(135deg, rgba(245, 191, 66, 0.22), rgba(196, 102, 24, 0.18)),
+    #fff7e8;
+  border: 1px solid rgba(130, 85, 20, 0.16);
+}
+
+.gomoku-cell {
+  aspect-ratio: 1;
+  border: 0;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.86);
+  color: #7a4d1f;
+  font-size: 1.15rem;
+  font-weight: 700;
+  transition: transform 140ms ease, background 140ms ease, box-shadow 140ms ease;
+}
+
+.gomoku-cell:hover:enabled {
+  transform: translateY(-1px);
+  background: #ffffff;
+  box-shadow: 0 12px 20px rgba(130, 85, 20, 0.12);
+}
+
+.gomoku-cell.is-filled {
+  background: rgba(122, 77, 31, 0.08);
+}
+
+.gomoku-cell.is-winning {
+  background: rgba(42, 144, 106, 0.18);
+  color: #1f5c47;
+}
+
+.gomoku-sidebar {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+}
+
 .launcher-placeholder {
   padding: 18px 0 0;
 }
@@ -1239,7 +1288,8 @@ textarea:focus {
 @media (max-width: 1120px) {
   .hero-panel,
   .package-hero,
-  .lobby-layout {
+  .lobby-layout,
+  .gomoku-layout {
     grid-template-columns: 1fr;
   }
 

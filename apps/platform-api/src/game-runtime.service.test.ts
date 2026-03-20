@@ -2,12 +2,14 @@ import { describe, expect, it } from "vitest";
 
 import { startTrace } from "@wifi-portal/shared-observability";
 
+import { MiniGomokuAdapter } from "./game-adapters/mini-gomoku.adapter";
 import { MemoryMatchDuelAdapter } from "./game-adapters/memory-match-duel.adapter";
 import { QuizDuelAdapter } from "./game-adapters/quiz-duel.adapter";
 import { SpotTheDifferenceRaceAdapter } from "./game-adapters/spot-the-difference-race.adapter";
 import { WordRallyAdapter } from "./game-adapters/word-rally.adapter";
 import { GameRuntimeService } from "./game-runtime.service";
 import { InMemoryJsonStateStore } from "./repositories/json-state-store";
+import { StateStoreMiniGomokuStateRepository } from "./repositories/mini-gomoku-state.repository";
 import { StateStoreMemoryMatchDuelStateRepository } from "./repositories/memory-match-duel-state.repository";
 import { StateStoreQuizDuelStateRepository } from "./repositories/quiz-duel-state.repository";
 import { StateStoreRoomRepository } from "./repositories/room.repository";
@@ -15,21 +17,26 @@ import { StateStoreSpotTheDifferenceRaceStateRepository } from "./repositories/s
 import { StateStoreWordRallyStateRepository } from "./repositories/word-rally-state.repository";
 import { RoomService } from "./room.service";
 
+function createRuntime(stateStore: InMemoryJsonStateStore, roomService: RoomService) {
+  return new GameRuntimeService(
+    roomService,
+    new MiniGomokuAdapter(new StateStoreMiniGomokuStateRepository(stateStore)),
+    new MemoryMatchDuelAdapter(
+      new StateStoreMemoryMatchDuelStateRepository(stateStore)
+    ),
+    new QuizDuelAdapter(new StateStoreQuizDuelStateRepository(stateStore)),
+    new SpotTheDifferenceRaceAdapter(
+      new StateStoreSpotTheDifferenceRaceStateRepository(stateStore)
+    ),
+    new WordRallyAdapter(new StateStoreWordRallyStateRepository(stateStore))
+  );
+}
+
 describe("GameRuntimeService", () => {
   it("creates quiz-duel runtime state from room lifecycle and advances through all rounds", async () => {
     const stateStore = new InMemoryJsonStateStore();
     const roomService = new RoomService(new StateStoreRoomRepository(stateStore));
-    const runtime = new GameRuntimeService(
-      roomService,
-      new MemoryMatchDuelAdapter(
-        new StateStoreMemoryMatchDuelStateRepository(stateStore)
-      ),
-      new QuizDuelAdapter(new StateStoreQuizDuelStateRepository(stateStore)),
-      new SpotTheDifferenceRaceAdapter(
-        new StateStoreSpotTheDifferenceRaceStateRepository(stateStore)
-      ),
-      new WordRallyAdapter(new StateStoreWordRallyStateRepository(stateStore))
-    );
+    const runtime = createRuntime(stateStore, roomService);
     const trace = startTrace();
 
     const created = await roomService.createRoom(trace, {
@@ -206,17 +213,7 @@ describe("GameRuntimeService", () => {
   it("supports a second multiplayer adapter for word-rally rooms", async () => {
     const stateStore = new InMemoryJsonStateStore();
     const roomService = new RoomService(new StateStoreRoomRepository(stateStore));
-    const runtime = new GameRuntimeService(
-      roomService,
-      new MemoryMatchDuelAdapter(
-        new StateStoreMemoryMatchDuelStateRepository(stateStore)
-      ),
-      new QuizDuelAdapter(new StateStoreQuizDuelStateRepository(stateStore)),
-      new SpotTheDifferenceRaceAdapter(
-        new StateStoreSpotTheDifferenceRaceStateRepository(stateStore)
-      ),
-      new WordRallyAdapter(new StateStoreWordRallyStateRepository(stateStore))
-    );
+    const runtime = createRuntime(stateStore, roomService);
     const trace = startTrace();
 
     const created = await roomService.createRoom(trace, {
@@ -265,17 +262,7 @@ describe("GameRuntimeService", () => {
   it("supports memory-match-duel rooms with shared board state", async () => {
     const stateStore = new InMemoryJsonStateStore();
     const roomService = new RoomService(new StateStoreRoomRepository(stateStore));
-    const runtime = new GameRuntimeService(
-      roomService,
-      new MemoryMatchDuelAdapter(
-        new StateStoreMemoryMatchDuelStateRepository(stateStore)
-      ),
-      new QuizDuelAdapter(new StateStoreQuizDuelStateRepository(stateStore)),
-      new SpotTheDifferenceRaceAdapter(
-        new StateStoreSpotTheDifferenceRaceStateRepository(stateStore)
-      ),
-      new WordRallyAdapter(new StateStoreWordRallyStateRepository(stateStore))
-    );
+    const runtime = createRuntime(stateStore, roomService);
     const trace = startTrace();
 
     const created = await roomService.createRoom(trace, {
@@ -336,17 +323,7 @@ describe("GameRuntimeService", () => {
   it("supports spot-the-difference-race rooms with low-frequency spot claims", async () => {
     const stateStore = new InMemoryJsonStateStore();
     const roomService = new RoomService(new StateStoreRoomRepository(stateStore));
-    const runtime = new GameRuntimeService(
-      roomService,
-      new MemoryMatchDuelAdapter(
-        new StateStoreMemoryMatchDuelStateRepository(stateStore)
-      ),
-      new QuizDuelAdapter(new StateStoreQuizDuelStateRepository(stateStore)),
-      new SpotTheDifferenceRaceAdapter(
-        new StateStoreSpotTheDifferenceRaceStateRepository(stateStore)
-      ),
-      new WordRallyAdapter(new StateStoreWordRallyStateRepository(stateStore))
-    );
+    const runtime = createRuntime(stateStore, roomService);
     const trace = startTrace();
 
     const created = await roomService.createRoom(trace, {
@@ -393,6 +370,88 @@ describe("GameRuntimeService", () => {
       spotId: "window-shade-01",
       status: "claimed"
     });
+
+    runtime.onModuleDestroy();
+  });
+
+  it("supports mini-gomoku rooms with five-in-a-row win detection", async () => {
+    const stateStore = new InMemoryJsonStateStore();
+    const roomService = new RoomService(new StateStoreRoomRepository(stateStore));
+    const runtime = createRuntime(stateStore, roomService);
+    const trace = startTrace();
+
+    const created = await roomService.createRoom(trace, {
+      game_id: "mini-gomoku",
+      host_player_id: "host-1",
+      host_session_id: "sess-host-1",
+      max_players: 2,
+      room_name: "Mini Gomoku Room"
+    });
+
+    await roomService.joinRoom(trace, {
+      player_id: "player-2",
+      room_id: created.room.room_id,
+      session_id: "sess-player-2"
+    });
+
+    const initialSnapshot = await runtime.getGameSnapshot(
+      trace,
+      "mini-gomoku",
+      created.room.room_id
+    );
+
+    expect(initialSnapshot?.state.board_size).toBe(9);
+    expect(initialSnapshot?.state.player_marks).toEqual({
+      "host-1": "X",
+      "player-2": "O"
+    });
+
+    const moves = [
+      { playerId: "host-1", row: 0, col: 0, seq: 1 },
+      { playerId: "player-2", row: 1, col: 0, seq: 1 },
+      { playerId: "host-1", row: 0, col: 1, seq: 2 },
+      { playerId: "player-2", row: 1, col: 1, seq: 2 },
+      { playerId: "host-1", row: 0, col: 2, seq: 3 },
+      { playerId: "player-2", row: 1, col: 2, seq: 3 },
+      { playerId: "host-1", row: 0, col: 3, seq: 4 },
+      { playerId: "player-2", row: 1, col: 3, seq: 4 }
+    ];
+
+    for (const move of moves) {
+      await runtime.handleGameEvent(trace, {
+        gameId: "mini-gomoku",
+        payload: {
+          col: move.col,
+          row: move.row
+        },
+        playerId: move.playerId,
+        roomId: created.room.room_id,
+        seq: move.seq,
+        type: "game_event"
+      });
+    }
+
+    const finalSnapshot = await runtime.handleGameEvent(trace, {
+      gameId: "mini-gomoku",
+      payload: {
+        col: 4,
+        row: 0
+      },
+      playerId: "host-1",
+      roomId: created.room.room_id,
+      seq: 5,
+      type: "game_event"
+    });
+
+    expect(finalSnapshot?.state.is_completed).toBe(true);
+    expect(finalSnapshot?.state.winner_player_ids).toEqual(["host-1"]);
+    expect(finalSnapshot?.state.winning_line).toEqual([
+      { col: 0, row: 0 },
+      { col: 1, row: 0 },
+      { col: 2, row: 0 },
+      { col: 3, row: 0 },
+      { col: 4, row: 0 }
+    ]);
 
     runtime.onModuleDestroy();
   });

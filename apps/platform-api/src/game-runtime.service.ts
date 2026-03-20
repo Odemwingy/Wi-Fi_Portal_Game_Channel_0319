@@ -13,6 +13,7 @@ import {
   type TraceContext
 } from "@wifi-portal/shared-observability";
 
+import { MiniGomokuAdapter } from "./game-adapters/mini-gomoku.adapter";
 import { MemoryMatchDuelAdapter } from "./game-adapters/memory-match-duel.adapter";
 import { QuizDuelAdapter } from "./game-adapters/quiz-duel.adapter";
 import { SpotTheDifferenceRaceAdapter } from "./game-adapters/spot-the-difference-race.adapter";
@@ -31,6 +32,8 @@ export class GameRuntimeService implements OnModuleDestroy {
   constructor(
     @Inject(RoomService)
     private readonly roomService: RoomService,
+    @Inject(MiniGomokuAdapter)
+    miniGomokuAdapter: MiniGomokuAdapter,
     @Inject(MemoryMatchDuelAdapter)
     memoryMatchDuelAdapter: MemoryMatchDuelAdapter,
     @Inject(QuizDuelAdapter)
@@ -41,6 +44,7 @@ export class GameRuntimeService implements OnModuleDestroy {
     wordRallyAdapter: WordRallyAdapter
   ) {
     this.adapters = createGameAdapterRegistry([
+      miniGomokuAdapter,
       memoryMatchDuelAdapter,
       quizDuelAdapter,
       spotTheDifferenceRaceAdapter,

@@ -21,6 +21,7 @@ import {
 } from "./airline-points.adapter";
 import { ChannelContentController } from "./channel-content.controller";
 import { ChannelContentService } from "./channel-content.service";
+import { MiniGomokuAdapter } from "./game-adapters/mini-gomoku.adapter";
 import { MemoryMatchDuelAdapter } from "./game-adapters/memory-match-duel.adapter";
 import { QuizDuelAdapter } from "./game-adapters/quiz-duel.adapter";
 import { SpotTheDifferenceRaceAdapter } from "./game-adapters/spot-the-difference-race.adapter";
@@ -47,6 +48,10 @@ import {
   MemoryMatchDuelStateRepository,
   StateStoreMemoryMatchDuelStateRepository
 } from "./repositories/memory-match-duel-state.repository";
+import {
+  MiniGomokuStateRepository,
+  StateStoreMiniGomokuStateRepository
+} from "./repositories/mini-gomoku-state.repository";
 import {
   AdminAuditRepository,
   StateStoreAdminAuditRepository
@@ -138,6 +143,7 @@ import { TraceMiddleware } from "./trace.middleware";
     RewardsService,
     RoomService,
     GameRuntimeService,
+    MiniGomokuAdapter,
     MemoryMatchDuelAdapter,
     QuizDuelAdapter,
     SpotTheDifferenceRaceAdapter,
@@ -187,6 +193,10 @@ import { TraceMiddleware } from "./trace.middleware";
     {
       provide: QuizDuelStateRepository,
       useClass: StateStoreQuizDuelStateRepository
+    },
+    {
+      provide: MiniGomokuStateRepository,
+      useClass: StateStoreMiniGomokuStateRepository
     },
     {
       provide: MemoryMatchDuelStateRepository,

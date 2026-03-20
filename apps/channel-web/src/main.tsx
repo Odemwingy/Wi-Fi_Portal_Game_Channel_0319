@@ -6,6 +6,7 @@ import { AdminOperationsPage } from "./AdminOperationsPage";
 import { App } from "./App";
 import { CabinPuzzlePackagePage } from "./CabinPuzzlePackagePage";
 import { MemoryMatchDuelPackagePage } from "./MemoryMatchDuelPackagePage";
+import { MiniGomokuPackagePage } from "./MiniGomokuPackagePage";
 import { PortalHostPage } from "./PortalHostPage";
 import { QuizDuelPackagePage } from "./QuizDuelPackagePage";
 import { RunwayRushPackagePage } from "./RunwayRushPackagePage";
@@ -25,6 +26,8 @@ const RootComponent =
     ? QuizDuelPackagePage
     : pathname === "/games/cabin-puzzle"
       ? CabinPuzzlePackagePage
+      : pathname === "/games/mini-gomoku"
+        ? MiniGomokuPackagePage
       : pathname === "/games/memory-match-duel"
         ? MemoryMatchDuelPackagePage
       : pathname === "/games/spot-the-difference-race"
