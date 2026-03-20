@@ -397,6 +397,17 @@ textarea:focus {
   margin-bottom: 16px;
 }
 
+.catalog-toolbar {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 16px;
+  grid-template-columns: repeat(2, minmax(0, 220px));
+}
+
+.catalog-toolbar-field {
+  max-width: 240px;
+}
+
 .section-chip {
   padding: 10px 14px;
   border: 0;
@@ -412,6 +423,84 @@ textarea:focus {
 
 .catalog-grid {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.discover-grid {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 18px;
+  grid-template-columns: 1.25fr 1fr 1fr 1fr;
+}
+
+.discover-hero-card,
+.discover-rail,
+.discover-tile,
+.quick-pick-card {
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.discover-hero-card {
+  display: grid;
+  gap: 16px;
+  padding: 22px;
+  background:
+    radial-gradient(circle at top right, rgba(188, 124, 31, 0.16), transparent 28%),
+    linear-gradient(135deg, rgba(13, 108, 134, 0.08), rgba(255, 255, 255, 0.94));
+}
+
+.discover-hero-card h3,
+.discover-rail strong {
+  margin: 0;
+}
+
+.discover-hero-card p,
+.discover-tile p,
+.quick-pick-card span {
+  margin: 0;
+  color: var(--muted);
+}
+
+.discover-rail {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+}
+
+.discover-list {
+  display: grid;
+  gap: 12px;
+}
+
+.discover-tile,
+.quick-pick-card {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  padding: 16px;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+
+.discover-tile:hover,
+.quick-pick-card:hover {
+  transform: translateY(-1px);
+}
+
+.quick-pick-row {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.quick-pick-card strong {
+  color: var(--accent-sea);
+  font-size: 0.92rem;
 }
 
 .profile-list {
@@ -1126,6 +1215,14 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 
+  .discover-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .quick-pick-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
   .panel,
   .panel-span-2 {
     grid-column: span 12;
@@ -1156,7 +1253,10 @@ textarea:focus {
   .rewards-grid,
   .rewards-stat-grid,
   .quiz-meta-grid,
-  .choice-grid {
+  .choice-grid,
+  .discover-grid,
+  .quick-pick-row,
+  .catalog-toolbar {
     grid-template-columns: 1fr;
   }
 

@@ -53,6 +53,14 @@ type BootstrapFormState = {
   seat_number: string;
 };
 
+type CatalogCapabilityFilter =
+  | "all"
+  | "multiplayer"
+  | "single-player"
+  | "points-reporting";
+
+type CatalogSortMode = "recommended" | "a-z" | "points" | "multiplayer-first";
+
 type RoomStatus = "idle" | "connecting" | "connected" | "error";
 
 type ActivityItem = {
@@ -85,6 +93,10 @@ export function App() {
     useState<SessionBootstrapResponse | null>(null);
   const [selectedGameId, setSelectedGameId] = useState("");
   const [selectedCatalogSection, setSelectedCatalogSection] = useState("All");
+  const [selectedCatalogCapability, setSelectedCatalogCapability] =
+    useState<CatalogCapabilityFilter>("all");
+  const [catalogSortMode, setCatalogSortMode] =
+    useState<CatalogSortMode>("recommended");
   const [catalogQuery, setCatalogQuery] = useState("");
   const [roomDraftName, setRoomDraftName] = useState("Cabin Quiz Table");
   const [inviteCodeDraft, setInviteCodeDraft] = useState("");
@@ -475,8 +487,16 @@ export function App() {
     "All",
     ...(bootstrapData?.channel_config.sections ?? [])
   ];
-  const filteredCatalog = (bootstrapData?.catalog ?? []).filter((entry) => {
+  const catalogEntries = bootstrapData?.catalog ?? [];
+  const filteredCatalog = catalogEntries.filter((entry) => {
     if (!matchesCatalogSection(entry, selectedCatalogSection)) {
+      return false;
+    }
+
+    if (
+      selectedCatalogCapability !== "all" &&
+      !entry.capabilities.includes(selectedCatalogCapability)
+    ) {
       return false;
     }
 
@@ -495,12 +515,30 @@ export function App() {
 
     return searchable.includes(deferredCatalogQuery);
   });
+  const sortedCatalog = sortCatalogEntries(filteredCatalog, catalogSortMode);
+  const featuredCatalog = sortCatalogEntries(
+    catalogEntries.filter((entry) => entry.categories.includes("Featured")),
+    "recommended"
+  ).slice(0, 3);
+  const multiplayerCatalog = sortCatalogEntries(
+    catalogEntries.filter((entry) => entry.capabilities.includes("multiplayer")),
+    "recommended"
+  ).slice(0, 3);
+  const pointsReadyCatalog = sortCatalogEntries(
+    catalogEntries.filter((entry) => entry.points_enabled),
+    "points"
+  ).slice(0, 3);
+  const quickPickCatalog = dedupeCatalogEntries([
+    ...featuredCatalog,
+    ...multiplayerCatalog,
+    ...pointsReadyCatalog
+  ]).slice(0, 4);
 
   const selectedGame =
-    filteredCatalog.find((entry) => entry.game_id === selectedGameId) ??
-    bootstrapData?.catalog.find((entry) => entry.game_id === selectedGameId) ??
-    filteredCatalog[0] ??
-    bootstrapData?.catalog[0] ??
+    sortedCatalog.find((entry) => entry.game_id === selectedGameId) ??
+    catalogEntries.find((entry) => entry.game_id === selectedGameId) ??
+    sortedCatalog[0] ??
+    catalogEntries[0] ??
     null;
   const activeProfile =
     profiles.find((profile) => profile.id === activeProfileId) ?? null;
@@ -1314,13 +1352,179 @@ export function App() {
           )}
         </article>
 
+        <article className="panel panel-span-2">
+          <div className="panel-heading">
+            <div>
+              <p className="panel-kicker">Discover</p>
+              <h2>频道推荐位与快捷浏览</h2>
+            </div>
+            <span className="pill">{catalogEntries.length} games live</span>
+          </div>
+
+          <div className="discover-grid">
+            <section className="discover-hero-card">
+              <p className="mini-label">Hero Recommendation</p>
+              <h3>{selectedGame?.display_name ?? bootstrapData?.channel_config.channel_name}</h3>
+              <p>
+                {selectedGame?.description ??
+                  bootstrapData?.channel_config.hero_title ??
+                  "当前频道已经支持推荐位、筛选和独立 package 启动。"}
+              </p>
+              <div className="tag-row">
+                {(selectedGame?.categories ?? bootstrapData?.channel_config.sections ?? [])
+                  .slice(0, 4)
+                  .map((item) => (
+                    <span className="tag" key={item}>
+                      {item}
+                    </span>
+                  ))}
+              </div>
+              {selectedGame ? (
+                <div className="button-row">
+                  <button
+                    className="action-button action-button-primary"
+                    onClick={() => {
+                      const catalogPanel = document.getElementById("catalog-browser");
+                      catalogPanel?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }}
+                    type="button"
+                  >
+                    浏览这个游戏
+                  </button>
+                  <a className="action-button" href={launchSpec?.url ?? "#"}>
+                    直接启动
+                  </a>
+                </div>
+              ) : null}
+            </section>
+
+            <section className="discover-rail">
+              <div className="activity-topline">
+                <strong>精选推荐</strong>
+                <span>{featuredCatalog.length} picks</span>
+              </div>
+              <div className="discover-list">
+                {featuredCatalog.map((entry) => (
+                  <button
+                    className="discover-tile"
+                    key={entry.game_id}
+                    onClick={() => {
+                      setSelectedGameId(entry.game_id);
+                    }}
+                    type="button"
+                  >
+                    <strong>{entry.display_name}</strong>
+                    <p>{entry.description}</p>
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            <section className="discover-rail">
+              <div className="activity-topline">
+                <strong>联机专区</strong>
+                <span>{multiplayerCatalog.length} rooms-ready</span>
+              </div>
+              <div className="discover-list">
+                {multiplayerCatalog.map((entry) => (
+                  <button
+                    className="discover-tile"
+                    key={entry.game_id}
+                    onClick={() => {
+                      setSelectedGameId(entry.game_id);
+                      setSelectedCatalogSection("Multiplayer");
+                    }}
+                    type="button"
+                  >
+                    <strong>{entry.display_name}</strong>
+                    <p>{entry.categories.join(" · ")}</p>
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            <section className="discover-rail">
+              <div className="activity-topline">
+                <strong>积分优先</strong>
+                <span>{pointsReadyCatalog.length} earnable</span>
+              </div>
+              <div className="discover-list">
+                {pointsReadyCatalog.map((entry) => (
+                  <button
+                    className="discover-tile"
+                    key={entry.game_id}
+                    onClick={() => {
+                      setSelectedGameId(entry.game_id);
+                      setSelectedCatalogCapability("points-reporting");
+                    }}
+                    type="button"
+                  >
+                    <strong>{entry.display_name}</strong>
+                    <p>{entry.points_enabled ? "支持积分回传" : "纯体验"}</p>
+                  </button>
+                ))}
+              </div>
+            </section>
+          </div>
+
+          <div className="quick-pick-row">
+            {quickPickCatalog.map((entry) => (
+              <button
+                className="quick-pick-card"
+                key={entry.game_id}
+                onClick={() => {
+                  setSelectedGameId(entry.game_id);
+                }}
+                type="button"
+              >
+                <span>{entry.display_name}</span>
+                <strong>{entry.capabilities[0] ?? "game"}</strong>
+              </button>
+            ))}
+          </div>
+        </article>
+
         <article className="panel">
           <div className="panel-heading">
             <div>
               <p className="panel-kicker">Catalog</p>
               <h2>游戏目录</h2>
             </div>
-            <span className="pill">{filteredCatalog.length} entries</span>
+            <span className="pill">{sortedCatalog.length} entries</span>
+          </div>
+
+          <div className="catalog-toolbar" id="catalog-browser">
+            <label className="catalog-toolbar-field">
+              排序
+              <select
+                onChange={(event) => {
+                  setCatalogSortMode(event.target.value as CatalogSortMode);
+                }}
+                value={catalogSortMode}
+              >
+                <option value="recommended">推荐优先</option>
+                <option value="multiplayer-first">联机优先</option>
+                <option value="points">积分优先</option>
+                <option value="a-z">A-Z</option>
+              </select>
+            </label>
+
+            <label className="catalog-toolbar-field">
+              能力
+              <select
+                onChange={(event) => {
+                  setSelectedCatalogCapability(
+                    event.target.value as CatalogCapabilityFilter
+                  );
+                }}
+                value={selectedCatalogCapability}
+              >
+                <option value="all">全部</option>
+                <option value="multiplayer">联机</option>
+                <option value="single-player">单机</option>
+                <option value="points-reporting">可赚积分</option>
+              </select>
+            </label>
           </div>
 
           <label className="search-row">
@@ -1350,7 +1554,7 @@ export function App() {
           </div>
 
           <div className="catalog-grid">
-            {filteredCatalog.map((entry) => (
+            {sortedCatalog.map((entry) => (
               <button
                 className={`catalog-card ${selectedGame?.game_id === entry.game_id ? "catalog-card-selected" : ""}`}
                 key={entry.game_id}
@@ -1365,6 +1569,11 @@ export function App() {
                 </div>
                 <p>{entry.description}</p>
                 <div className="tag-row">
+                  {entry.categories.slice(0, 3).map((category) => (
+                    <span className="tag" key={category}>
+                      {category}
+                    </span>
+                  ))}
                   {entry.capabilities.map((capability) => (
                     <span className="tag" key={capability}>
                       {capability}
@@ -1374,6 +1583,13 @@ export function App() {
               </button>
             ))}
           </div>
+
+          {sortedCatalog.length === 0 ? (
+            <div className="empty-state compact">
+              <h3>没有匹配的游戏</h3>
+              <p>调整 section、能力筛选或搜索词后，这里会更新结果。</p>
+            </div>
+          ) : null}
         </article>
 
         <article className="panel panel-span-2">
@@ -1735,6 +1951,76 @@ function matchesCatalogSection(
   }
 
   return entry.categories.includes(section);
+}
+
+function sortCatalogEntries(
+  entries: SessionBootstrapResponse["catalog"],
+  sortMode: CatalogSortMode
+) {
+  return [...entries].sort((left, right) => {
+    switch (sortMode) {
+      case "a-z":
+        return left.display_name.localeCompare(right.display_name);
+
+      case "points":
+        if (left.points_enabled !== right.points_enabled) {
+          return Number(right.points_enabled) - Number(left.points_enabled);
+        }
+        return left.display_name.localeCompare(right.display_name);
+
+      case "multiplayer-first":
+        if (
+          left.capabilities.includes("multiplayer") !==
+          right.capabilities.includes("multiplayer")
+        ) {
+          return Number(right.capabilities.includes("multiplayer")) -
+            Number(left.capabilities.includes("multiplayer"));
+        }
+        return left.display_name.localeCompare(right.display_name);
+
+      case "recommended":
+      default: {
+        const leftScore = getCatalogRecommendationScore(left);
+        const rightScore = getCatalogRecommendationScore(right);
+        if (rightScore !== leftScore) {
+          return rightScore - leftScore;
+        }
+        return left.display_name.localeCompare(right.display_name);
+      }
+    }
+  });
+}
+
+function getCatalogRecommendationScore(
+  entry: SessionBootstrapResponse["catalog"][number]
+) {
+  let score = 0;
+  if (entry.categories.includes("Featured")) {
+    score += 4;
+  }
+  if (entry.capabilities.includes("multiplayer")) {
+    score += 3;
+  }
+  if (entry.points_enabled) {
+    score += 2;
+  }
+  score += Math.max(0, 4 - entry.categories.length);
+  return score;
+}
+
+function dedupeCatalogEntries(
+  entries: SessionBootstrapResponse["catalog"]
+) {
+  const seen = new Set<string>();
+
+  return entries.filter((entry) => {
+    if (seen.has(entry.game_id)) {
+      return false;
+    }
+
+    seen.add(entry.game_id);
+    return true;
+  });
 }
 
 function formatShortTime(value: string) {
