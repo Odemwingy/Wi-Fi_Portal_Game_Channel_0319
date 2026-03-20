@@ -13,10 +13,21 @@ test("passenger channel homepage loads bootstrap dashboard", async ({ page }) =>
   ).toBeVisible();
   await expect(
     page.getByRole("heading", {
-      name: "面向乘客的频道首页"
+      name: "精选推荐"
     })
   ).toBeVisible();
-  await expect(page.getByText("联机专区")).toBeVisible();
+  await expect(page.getByText("游戏频道")).toBeVisible();
+});
+
+test("portal games hub loads passenger-facing catalog", async ({ page }) => {
+  await page.goto("/portal/games");
+
+  await expect(
+    page.getByRole("heading", {
+      name: "游戏频道"
+    })
+  ).toBeVisible();
+  await expect(page.getByText("按使用场景浏览")).toBeVisible();
 });
 
 test("admin channel page can log in and load published content controls", async ({

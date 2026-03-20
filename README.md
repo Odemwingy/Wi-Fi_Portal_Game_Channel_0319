@@ -109,6 +109,9 @@ This starts:
 The frontend container serves the passenger channel shell and uses route-level lazy loading for package pages. Open:
 
 - `http://127.0.0.1:8080/`
+- `http://127.0.0.1:8080/portal/games`
+- `http://127.0.0.1:8080/portal/multiplayer`
+- `http://127.0.0.1:8080/portal/flight-info`
 - `http://127.0.0.1:8080/lab/channel`
 - `http://127.0.0.1:8080/admin/channel`
 - `http://127.0.0.1:8080/admin/operations`
@@ -157,6 +160,7 @@ passes or fails.
 ## Delivery Notes
 
 - `apps/channel-web` is the initial passenger entry surface for the game channel.
+- `apps/channel-web` now exposes a Tech Style-inspired passenger portal shell with dedicated `/portal/*` navigation pages.
 - `apps/channel-web` now also exposes a minimal content admin surface at `/admin/channel`.
 - `apps/channel-web` now also exposes an operations admin surface at `/admin/operations` for points rules and airline sync management.
 - `apps/platform-api` is the initial Game Platform service shell.

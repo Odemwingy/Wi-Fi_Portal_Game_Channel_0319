@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from "react";
 import ReactDOM from "react-dom/client";
 
 import { RouteLoadingFallback } from "./RouteLoadingFallback";
+import "./passenger-portal.css";
 import "./styles.css";
 
 type RouteModule = {
@@ -24,6 +25,18 @@ const routes: Record<string, React.LazyExoticComponent<React.ComponentType>> = {
   "/": loadRoute(
     () => import("./PassengerChannelPage"),
     (module) => module.PassengerChannelPage
+  ),
+  "/portal/games": loadRoute(
+    () => import("./PassengerGamesHubPage"),
+    (module) => module.PassengerGamesHubPage
+  ),
+  "/portal/multiplayer": loadRoute(
+    () => import("./PassengerMultiplayerPage"),
+    (module) => module.PassengerMultiplayerPage
+  ),
+  "/portal/flight-info": loadRoute(
+    () => import("./PassengerFlightInfoPage"),
+    (module) => module.PassengerFlightInfoPage
   ),
   "/admin/channel": loadRoute(
     () => import("./AdminChannelPage"),
